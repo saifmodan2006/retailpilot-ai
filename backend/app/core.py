@@ -73,8 +73,8 @@ engine = create_engine(
         {"connect_args": {"check_same_thread": False}}
         if settings.database_url.startswith("sqlite")
         else {
-            "pool_size": 2,
-            "max_overflow": 0,
+            "pool_size": 2 if settings.public_demo else 5,
+            "max_overflow": 0 if settings.public_demo else 5,
             "pool_timeout": 30,
             "pool_recycle": 300,
             "connect_args": {"connect_timeout": 15, "prepare_threshold": None},

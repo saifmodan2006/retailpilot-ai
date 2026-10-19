@@ -1,6 +1,6 @@
 # Fictional demonstration data
 
-No real Saffron, employee, customer, sales, or inventory records are used.
+No real company, employee, customer, sales, or inventory records are used.
 
 `demo_dataset.zip` contains the complete seeded dataset as CSV: stores, SKU catalog, suppliers, sales and inventory. `manifest.json` records exact generated counts. The application seeds this data directly through `app.seed.seed` into each isolated demo tenant. Fixed random seed: **271828**. Business dates: **19 October 2025–18 October 2026**. 12 stores, 5 brands, 6 categories, 180 products, 360 size/color variants, 4 suppliers, 4,320 inventory positions.
 

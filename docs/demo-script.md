@@ -1,6 +1,6 @@
 # A 3–4 minute walkthrough
 
-Prepare: run the services, open the landing page, download the incremental sample and create a demo session. Allow initial data generation to finish before presenting. Show the “synthetic data” label clearly. Never describe these as Saffron records.
+Prepare: run the services, open the landing page, download the incremental sample and create a demo session. Allow initial data generation to finish before presenting. Show the “synthetic data” label clearly. Never describe these as records from a real business.
 
 **0:00–0:30 · The retail problem**
 

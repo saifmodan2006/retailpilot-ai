@@ -6,6 +6,14 @@
 
 This is a fictional, isolated retail demonstration—not a claim of production certification or a commercial ERP connection. The application works without a paid AI API. Data stays on the configured application/database services by default.
 
+## Live portfolio demo
+
+- [Open RetailPilot AI](https://retailpilot-ai.pages.dev/)
+- [API health](https://retailpilot-ai-api.onrender.com/api/v1/health)
+- [Source and CI](https://github.com/saifmodan2006/retailpilot-ai)
+
+Hosted on Cloudflare Pages Free, Render Free and isolated Neon Free PostgreSQL. Demo startup can take about a minute after inactivity. Access is limited to four fictional workspaces at a time, with two-hour sessions and sample-only uploads. The local ERP simulator is disabled publicly. No paid AI API or paid hosting plan is required. See [executed release checks](docs/verification.md).
+
 ## Business problem
 
 Retail teams often spend hours reconciling disconnected spreadsheets before they can decide which stores need stock and which purchases deserve approval. RetailPilot turns that workflow into a traceable sequence: inspect data quality, calculate shared KPIs, explain reorder quantities, request a manager decision and export the same figures to MIS. The sample company, products and transactions are fictional. No time-saving percentage or commercial impact is claimed without a real study.
@@ -107,7 +115,7 @@ See [.env.example](.env.example). `scripts/setup-env.py` creates ignored `.env` 
 6. Generate a Daily sales MIS; download XLSX/PDF. Ask the analyst “What is our current inventory value?” and inspect the result/period.
 7. Open forecasting, workflow history and audit trail. Integrations → Test connection → Preview sales sync; review the batch in Import Center before committing.
 
-The full synthetic dataset is shipped in [sample_data/demo_dataset.zip](sample_data/demo_dataset.zip), with counts in its [manifest](sample_data/manifest.json) and generation code. It contains 12 months, 12 stores, 5 brands, 180 products, 360 variants, suppliers, returns, seasonal fluctuations and deliberate inactive-stock cases. No real Saffron data.
+The full synthetic dataset is shipped in [sample_data/demo_dataset.zip](sample_data/demo_dataset.zip), with counts in its [manifest](sample_data/manifest.json) and generation code. It contains 12 months, 12 stores, 5 brands, 180 products, 360 variants, suppliers, returns, seasonal fluctuations and deliberate inactive-stock cases. No real business data.
 
 ## Tests and builds
 
@@ -127,11 +135,11 @@ The backend suite uses known small deterministic fixtures in an isolated tempora
 
 ## Restricted public demo
 
-Public hosting must set `PUBLIC_DEMO=true` on a fresh, dedicated PostgreSQL database. Sessions last two hours; the free-tier configuration admits at most four simultaneous fictional tenants. Expired tenants are removed when a later session is admitted. Server-side quotas bound imports, reports, forecasts, approvals and manual workflows. Only byte-identical supplied XLSX/CSV samples are accepted publicly. Optional LLM providers and private ERP endpoints are rejected at startup. Demo manager switching is allowed only inside explicitly marked fictional organizations. Public OpenAPI pages are disabled.
+Public hosting must set `PUBLIC_DEMO=true` on a fresh, dedicated PostgreSQL database. Sessions last two hours; the free-tier configuration admits at most four simultaneous fictional tenants. Expired tenants are removed when a later session is admitted. Server-side quotas bound imports, reports, forecasts, approvals and manual workflows. Only byte-identical supplied XLSX/CSV samples are accepted publicly. Optional LLM providers and private ERP endpoints are rejected at startup. Demo manager switching is allowed only inside explicitly marked fictional organizations. Public OpenAPI pages are disabled. Starting a replacement workspace ends the prior public demo session and makes its fictional data reclaimable on the next admission.
 
 ## Deployment and operation
 
-Use the same Docker images on a small Linux machine or container host with managed PostgreSQL. Set `DATABASE_URL` to the managed URL, use TLS per your provider, and keep database/ERP ports private. Serve the frontend behind HTTPS and proxy `/api` to FastAPI. Containers include health checks; `/api/v1/health` checks database connectivity. Run one application worker for this demo's in-process task runner and limiter. Configure backups and retention before storing real data. See [deployment guide](docs/deployment.md).
+The deployed architecture uses Cloudflare Pages for the React build, Render native Python for FastAPI and Neon PostgreSQL over TLS. The same Docker images can also run on an existing Linux machine or container host. Set `DATABASE_URL` to the managed URL, use TLS per your provider, and keep database/ERP ports private. Serve the frontend behind HTTPS and proxy `/api` to FastAPI. Containers include health checks; `/api/v1/health` checks database connectivity. Run one application worker for this demo's in-process task runner and limiter. Configure backups and retention before storing real data. See [deployment guide](docs/deployment.md).
 
 See [release evidence](docs/verification.md) for verified URLs and test outcomes; unverified hosting is never presented as a live demo. This stack includes a Python server and cannot be deployed as a static-only website.
 
@@ -142,6 +150,7 @@ See [release evidence](docs/verification.md) for verified URLs and test outcomes
 - [3–4 minute demo script](docs/demo-script.md)
 - [Internship case study and portfolio summary](docs/internship-case-study.md)
 - [Verification evidence](docs/verification.md)
+- [Recruiter submission checklist](docs/recruiter-submission.md)
 - [Working screenshots](docs/screenshots)
 
 ## Known boundaries
