@@ -29,3 +29,7 @@ Capture every page before editing. Add regression tests for each repaired securi
 ## Resolution evidence
 
 The listed security gaps now have implemented controls and regression coverage (53 backend tests passed). The 52-capture visual matrix passed after responsive fixes. Public compute is single-process and serialized; SQL filtering/typed tuples reduced memory allocation. A complete browser journey passed with a 512 MB hard limit at ~232 MiB peak. Secrets and sample archives were scanned before publication. The user's final architecture is Cloudflare Pages Free + Render Free native Python + isolated Neon Free PostgreSQL; no paid Containers, billing methods or overages are authorized. Public URLs require separate live verification.
+
+## Dependency advisory review
+
+pip-audit initially reported advisories in pydantic-settings 2.13.1, PyJWT 2.12.1 and python-multipart 0.0.22 (29 records, including duplicate advisory entries). Upgraded exact pins to 2.16.0, 2.15.1 and 0.0.32 respectively. The complete 53-test suite passed again. A fresh audit of all pinned runtime dependencies found no known advisories; see dependency-audit.json. npm audit also returned zero findings. An audit job now enforces this in CI. This is point-in-time advisory coverage, not a guarantee against unknown vulnerabilities.

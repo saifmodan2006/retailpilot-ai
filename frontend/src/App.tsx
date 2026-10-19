@@ -2180,7 +2180,7 @@ function Workflows({ act, busy }: ActionProps) {
   return (
     <>
       <div className="workflow-summary">
-        {['Completed', 'Running', 'Queued', 'Failed'].map((status) => <div key={status}><span>{status}</span><strong>{query.data?.filter((row) => row.status === status).length ?? 0}</strong><small>Saved workflow runs</small></div>)}
+        {['Completed', 'Running', 'Pending', 'Failed'].map((status) => <div key={status}><span>{status}</span><strong>{query.data?.filter((row) => row.status === status).length ?? 0}</strong><small>Saved workflow runs</small></div>)}
       </div>
       <div className="workflow-grid">
         {[

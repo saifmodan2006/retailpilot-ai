@@ -1,4 +1,4 @@
-# Release verification ? 20 October 2026
+# Release verification - 20 October 2026
 
 Current release checks, executed locally before public deployment:
 
@@ -10,7 +10,7 @@ Current release checks, executed locally before public deployment:
 | Public-demo browser journey, hard 512 MB container | **2 passed in 1.8 minutes** |
 | Measured cgroup memory peak | **242,954,240 bytes**, no OOM, zero restarts |
 | Isolated PostgreSQL size | **38,303,411 bytes** after full journey + empty tenant |
-| Visual route matrix | **52 captures**, 13 routes ? 4 viewports; no document overflow or role alerts |
+| Visual route matrix | **52 captures**, 13 routes x 4 viewports; no document overflow or role alerts |
 | Staged source scan | Passed, including ZIP/XLSX members and comparison with ignored local secrets |
 | GitHub CI / public URLs | Pending live release verification below |
 

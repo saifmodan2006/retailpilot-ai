@@ -24,12 +24,12 @@ pillow==13.0.0
 psycopg==3.3.3
 psycopg-binary==3.3.3
 pydantic==2.14.1
-pydantic-settings==2.13.1
+pydantic-settings==2.16.0
 pydantic_core==2.50.1
-PyJWT==2.12.1
+PyJWT==2.15.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.4
-python-multipart==0.0.22
+python-multipart==0.0.32
 pytz==2026.5
 reportlab==4.4.10
 six==1.17.0

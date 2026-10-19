@@ -1,6 +1,6 @@
 # Free-tier deployment
 
-Budget: **?0**. No paid plans, billing methods, paid overages, Cloudflare Containers or worker services are required.
+Budget: **INR 0**. No paid plans, billing methods, paid overages, Cloudflare Containers or worker services are required.
 
 Cloudflare Pages Free serves React/Vite. Browser requests go directly to Render Free native Python FastAPI over HTTPS. Neon Free stores business records, imports, reports, workflow state and audit events. Render's ephemeral filesystem is not a business datastore. The ERP simulator remains available locally in Docker Compose and is disconnected publicly; external LLMs are disabled publicly.
 
