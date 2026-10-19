@@ -1,4 +1,5 @@
 """Measure one real fictional seed on Render and end its disposable session."""
+
 import json
 import time
 from pathlib import Path
@@ -17,14 +18,14 @@ with httpx.Client(base_url=evidence["api"], timeout=180) as client:
         start = time.monotonic()
         r = client.post("/api/v1/demo/seed")
         r.raise_for_status()
-        evidence["seed_seconds"] = round(time.monotonic()-start, 3)
+        evidence["seed_seconds"] = round(time.monotonic() - start, 3)
         for key, value in manifest.items():
             assert r.json()[key] == value, key
         evidence["counts_match_manifest"] = True
         r = client.get("/api/v1/analytics")
         r.raise_for_status()
         metrics = r.json()["metrics"]
-        assert abs(metrics["revenue"] - (previous["revenue"]-55532.25)) < 0.01
+        assert abs(metrics["revenue"] - (previous["revenue"] - 55532.25)) < 0.01
         assert metrics["inventory_value"] == previous["report_metrics"]["inventory_value"]
         evidence["baseline_metrics_unchanged"] = True
     finally:

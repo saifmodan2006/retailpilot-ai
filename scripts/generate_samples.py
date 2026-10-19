@@ -72,6 +72,4 @@ for i in range(1, 11):
     ws.append(["2026-10-18", "ST01", f"RP-{i:03}-1", 5, 1, "2026-10-01"])
 style(ws)
 wb.save(ROOT / "inventory_import.xlsx")
-print(
-    "Generated 3 fictional sample files. Sales XLSX: 15 valid, 4 deliberately rejected rows."
-)
+print("Generated 3 fictional sample files. Sales XLSX: 15 valid, 4 deliberately rejected rows.")

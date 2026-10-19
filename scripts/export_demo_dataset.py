@@ -43,8 +43,7 @@ with tempfile.TemporaryDirectory() as directory:
         suppliers = {r.id: r for r in db.scalars(select(Supplier))}
         tables = {
             "stores.csv": [
-                {"store": r.code, "name": r.name, "city": r.city}
-                for r in db.scalars(select(Store))
+                {"store": r.code, "name": r.name, "city": r.city} for r in db.scalars(select(Store))
             ],
             "catalog.csv": [
                 {

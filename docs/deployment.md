@@ -51,13 +51,15 @@ SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) AS total_size
 FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC;
 ```
 
-The isolated local PostgreSQL check used **38,303,411 bytes** after one full tenant, imported rows, saved reports and an empty tenant. Four tenants leave headroom; WAL/history, indexes and traffic still require monitoring. Expired marked demo tenants are deleted on later session admission. This is bounded demo lifecycle management, not backups or unattended maintenance.
+A live Neon SQL checkpoint measured **67,993,600 bytes (65 MB)** with two full seeded/imported tenants and one empty tenant, well below the displayed 1 GB allowance. More disposable verification workspaces can temporarily change that total; cleanup reclaims ended/expired tenants on later admission.
+
+The isolated local PostgreSQL check used **38,303,411 bytes** after one full tenant, imported rows, saved reports and an empty tenant. Four tenants leave headroom; WAL/history, indexes and traffic still require monitoring. Expired marked demo tenants are deleted on later session admission. Explicit session ending revokes access immediately and makes the marked fictional tenant reclaimable on later admission. This is bounded demo lifecycle management, not backups or unattended maintenance.
 
 ## Memory and background work
 
 Public API computations are serialized in one process. Uvicorn concurrency, uploads, expanded XLSX size and row counts are bounded. Runtime dependencies exclude unused scikit-learn and development tools. Analytics reads typed tuples and pushes store/SKU filters into SQL, avoiding large row dictionaries and Decimal allocations. Reports and background workflows run inside the web service; no separate free-tier worker or hosted cron is claimed. PostgreSQL retains execution state; interrupted jobs become explicitly retryable on restart.
 
-The complete local browser journey passed with a **512 MB hard cgroup limit**, peak **242,954,240 bytes (~232 MiB)**, no OOM and zero restarts. Render CPU/network/cold starts need separate live verification. Public uploads accept only supplied fictional samples, which are much smaller than the private local parser's maximum.
+The complete local browser journey passed with a **512 MB hard cgroup limit**, peak **242,954,240 bytes (~232 MiB)**, no OOM and zero restarts. A subsequent full 4,320-row inventory XLSX/PDF export raised the measured peak to **259,801,088 bytes (~248 MiB)**, still below the hard limit. Render CPU/network/cold starts need separate live verification. Public uploads accept only supplied fictional samples, which are much smaller than the private local parser's maximum.
 
 ## Operational limits and validation
 

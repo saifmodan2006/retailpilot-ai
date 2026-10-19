@@ -1,0 +1,9 @@
+{
+  "api": "https://retailpilot-ai-api.onrender.com",
+  "seed": 271828,
+  "seed_seconds": 63.719,
+  "counts_match_manifest": true,
+  "baseline_metrics_unchanged": true,
+  "disposable_session_ended": true,
+  "backend_revision": "7835af35577268a4114273df912e988826b94dc6"
+}

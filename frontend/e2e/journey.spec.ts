@@ -2,6 +2,15 @@ import { test, expect } from "@playwright/test";
 import path from "node:path";
 const apiBase = (process.env.E2E_API_URL ?? "") + "/api/v1";
 
+test.afterEach(async ({page}) => {
+  // Public journeys must release their own disposable slot; local fixtures stay available.
+  if (!process.env.E2E_API_URL) return;
+  const token = await page.evaluate(() => localStorage.getItem("rp-token")).catch(() => null);
+  if (token) await page.request.post(apiBase + "/demo/end", {
+    headers: {Authorization: "Bearer " + token},
+  });
+});
+
 test("complete Excel to MIS, approval, analyst and audit journey", async ({
   page,
 }) => {

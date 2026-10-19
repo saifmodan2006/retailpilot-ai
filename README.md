@@ -6,6 +6,8 @@
 
 This is a fictional, isolated retail demonstration—not a claim of production certification or a commercial ERP connection. The application works without a paid AI API. Data stays on the configured application/database services by default.
 
+[![Verify RetailPilot](https://github.com/saifmodan2006/retailpilot-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/saifmodan2006/retailpilot-ai/actions/workflows/ci.yml)
+
 ## Live portfolio demo
 
 - [Open RetailPilot AI](https://retailpilot-ai.pages.dev/)
@@ -107,7 +109,7 @@ See [.env.example](.env.example). `scripts/setup-env.py` creates ignored `.env` 
 
 ## Demo sequence
 
-1. Start guided demo, then **Load demo data**. Initial generation can take 15–60 seconds depending on the machine and concurrent work; subsequent analytics use persisted records.
+1. Start guided demo, then **Load demo data**. Initial generation can take 15-120 seconds depending on the machine and concurrent work; subsequent analytics use persisted records.
 2. Inspect the overview and filters. Every figure is labeled synthetic; fixed reporting date is **18 October 2026**.
 3. Import `sample_data/sales_import.xlsx`: inspect **15 accepted / 4 rejected**, mappings, source rows and downloadable errors. Import accepted rows; selected-period revenue increases by **INR 55,532.25**.
 4. Open Inventory Intelligence → Review a recommendation → inspect formula → Submit for approval.
@@ -155,7 +157,7 @@ See [release evidence](docs/verification.md) for verified URLs and test outcomes
 
 ## Known boundaries
 
-This is a portfolio demonstrator with real calculations and persistence, not an enterprise deployment. Outstanding production work includes organizational OIDC, shared rate/session controls across multiple instances, scheduled vacuum/storage maintenance, database row-level security, a transactional multi-worker job queue and outbox, inventory cost layers, operational reconciliation and larger-scale SQL aggregation. The task runner supports single-process recovery, not exactly-once distributed execution. No document RAG, commercial ERP, real notifications, committed stock transfers or statistically calibrated confidence intervals are shipped. Supplier planning is adjustable in Settings through the manager-only API. Receipt date approximates ageing; exact FIFO lot ageing is not modeled. Responsive layouts and keyboard focus are implemented, but a full screen-reader/WCAG audit has not been performed.
+This is a portfolio demonstrator with real calculations and persistence, not an enterprise deployment. Outstanding production work includes organizational OIDC, shared rate/session controls across multiple instances, scheduled vacuum/storage maintenance, database row-level security, a transactional multi-worker job queue and outbox, inventory cost layers, operational reconciliation and larger-scale SQL aggregation. The task runner supports single-process recovery, not exactly-once distributed execution. No document RAG, commercial ERP, real notifications, committed stock transfers or statistically calibrated confidence intervals are shipped. Supplier planning is adjustable in Settings through the manager-only API. Receipt date approximates ageing; exact FIFO lot ageing is not modeled. Responsive layouts, keyboard focus and targeted automated WCAG checks across all thirteen routes are implemented. Four incomplete automated checks and a full screen-reader/WCAG review remain separate work.
 
 Technical references: [FastAPI security](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/) and [SQLAlchemy sessions](https://docs.sqlalchemy.org/en/20/orm/session_basics.html).
 

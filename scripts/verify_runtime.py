@@ -2,6 +2,7 @@
 
 import json
 import sys
+import time
 from pathlib import Path
 
 import httpx
@@ -30,6 +31,15 @@ with SessionLocal() as db:
         timeout=90,
         headers={"Authorization": "Bearer " + token(user)},
     ) as client:
+        for _ in range(30):
+            try:
+                if client.get("/api/v1/health", timeout=2).status_code == 200:
+                    break
+            except httpx.HTTPError:
+                pass  # A deliberate restart can briefly close an established socket.
+            time.sleep(1)
+        else:
+            raise RuntimeError("Backend did not become ready after restart")
         if mode == "persistence":
             report = db.get(Report, evidence["report_id"])
             assert report.metrics == evidence["report_metrics"]

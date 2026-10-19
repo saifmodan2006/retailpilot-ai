@@ -187,7 +187,7 @@ function Brand({ small = false }: { small?: boolean }) {
         <BarChart3 size={small ? 19 : 23} />
       </span>
       <span>
-        RetailPilot<span className="ai-mark">AI</span>
+        RetailPilot <span className="ai-mark">AI</span>
       </span>
     </div>
   );
@@ -392,6 +392,7 @@ export default function App() {
   const start = async () => {
     setBusy(true);
     setFailure("");
+    setNotice("");
     try {
       if (me.data?.public_demo && localStorage.getItem("rp-token")) {
         await api("/demo/end", { method: "POST" }).catch(() => undefined);
@@ -399,6 +400,7 @@ export default function App() {
       const data = await api("/demo/session", { method: "POST" });
       localStorage.setItem("rp-token", data.access_token);
       setActive(true);
+      setFilters(initialFilters);
       qc.clear();
       navigate("/app/overview");
     } catch (e) {
@@ -555,7 +557,7 @@ export default function App() {
             >
               <CircleHelp size={19} />
             </button>
-            <Link to="/app/settings" aria-label="Profile and workspace settings" className="avatar">
+            <Link to="/app/settings" aria-label={`${me.data?.user.role === "manager" ? "DM" : "DA"} - Profile and workspace settings`} className="avatar">
               {me.data?.user.role === "manager" ? "DM" : "DA"}
             </Link>
           </div>
@@ -896,6 +898,7 @@ function KPI({
         <span
           title={definition}
           className="kpi-help"
+          role="img"
           tabIndex={0}
           aria-label={definition}
         >

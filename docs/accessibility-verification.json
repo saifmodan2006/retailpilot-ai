@@ -1,0 +1,70 @@
+{
+  "scope": "Local desktop automated WCAG 2 A/AA and 2.1 A/AA; manual checks and screen-reader review remain separate.",
+  "results": [
+    {
+      "page": "landing",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "overview",
+      "violations": [],
+      "incomplete_checks": 1
+    },
+    {
+      "page": "sales",
+      "violations": [],
+      "incomplete_checks": 1
+    },
+    {
+      "page": "inventory",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "forecast",
+      "violations": [],
+      "incomplete_checks": 1
+    },
+    {
+      "page": "imports",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "reports",
+      "violations": [],
+      "incomplete_checks": 1
+    },
+    {
+      "page": "analyst",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "workflows",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "approvals",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "audit",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "integrations",
+      "violations": [],
+      "incomplete_checks": 0
+    },
+    {
+      "page": "settings",
+      "violations": [],
+      "incomplete_checks": 0
+    }
+  ]
+}
