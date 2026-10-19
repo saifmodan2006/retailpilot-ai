@@ -1,0 +1,14 @@
+.git
+.venv
+**/node_modules
+**/__pycache__
+**/*.db
+**/test-results
+**/playwright-report
+**/dist
+.env
+.env.*
+.agents
+**/*.pem
+**/*.key
+docs/screenshots

@@ -1,0 +1,39 @@
+{
+  "organization_id": "146ca9f0-9b2a-4eb7-8adf-590f59160820",
+  "actor_id": 1,
+  "checks": [
+    "/api/v1/health",
+    "/docs",
+    "/openapi.json",
+    "/samples/sales_import.xlsx",
+    "stores: 12",
+    "products: 180",
+    "skus: 360",
+    "ERP HTTP sync: authenticated 3-page fetch; 25 rows validated into review batch",
+    "analyst:stores",
+    "analyst:stockouts",
+    "analyst:dead-stock",
+    "analyst:inventory",
+    "analyst:reorder",
+    "analyst:revenue",
+    "report:xlsx",
+    "report:pdf"
+  ],
+  "erp_preview_batch_id": 3,
+  "report_id": 5,
+  "report_metrics": {
+    "revenue": 23146926.25,
+    "units": 15775,
+    "gross_profit": 11570297.5,
+    "margin": 49.99,
+    "stock": 109701,
+    "inventory_value": 79469197.53,
+    "sell_through": 12.57,
+    "cover_days": 196.2,
+    "low_stock": 168,
+    "dead_stock_value": 11928725.96,
+    "forecasted_stockouts": 168
+  },
+  "sales_count": 97623,
+  "persistence_after_backend_restart": true
+}

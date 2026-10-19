@@ -1,0 +1,366 @@
+[
+  {
+    "page": "landing",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "overview",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "sales",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "inventory",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "forecast",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "imports",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "reports",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "analyst",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "workflows",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "approvals",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "audit",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "integrations",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "settings",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "landing",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "overview",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "sales",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "inventory",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "forecast",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "imports",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "reports",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "analyst",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "workflows",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "approvals",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "audit",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "integrations",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "settings",
+    "width": 1280,
+    "height": 800,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "landing",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "overview",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "sales",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "inventory",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "forecast",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "imports",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "reports",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "analyst",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "workflows",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "approvals",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "audit",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "integrations",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "settings",
+    "width": 768,
+    "height": 1024,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "landing",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "overview",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "sales",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "inventory",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "forecast",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "imports",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "reports",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "analyst",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "workflows",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "approvals",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "audit",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "integrations",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "settings",
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "alerts": []
+  }
+]

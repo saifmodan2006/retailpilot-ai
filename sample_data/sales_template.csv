@@ -1,0 +1,3 @@
+transaction_id,date,store,sku,quantity,unit_price,discount
+UPLOAD-OCT-001,2026-10-18,ST02,RP-001-1,3,1299,0.05
+UPLOAD-OCT-002,2026-10-18,ST03,RP-002-1,3,1299,0.05

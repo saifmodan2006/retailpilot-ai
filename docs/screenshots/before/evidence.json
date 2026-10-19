@@ -1,0 +1,93 @@
+[
+  {
+    "page": "landing",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "overview",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "sales",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "inventory",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "forecast",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "imports",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "reports",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "analyst",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "workflows",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "approvals",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "audit",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "integrations",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  },
+  {
+    "page": "settings",
+    "width": 1440,
+    "height": 900,
+    "overflow": false,
+    "alerts": []
+  }
+]

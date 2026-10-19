@@ -1,0 +1,10 @@
+{
+  "stores": 12,
+  "brands": 5,
+  "products": 180,
+  "skus": 360,
+  "sales": 97608,
+  "inventory_rows": 4320,
+  "seed": 271828,
+  "as_of": "2026-10-18"
+}
