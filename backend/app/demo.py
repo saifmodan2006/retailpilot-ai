@@ -5,7 +5,7 @@ from datetime import timedelta, timezone
 from pathlib import Path
 
 from fastapi import HTTPException
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import delete, func, select, text, or_
 
 from .core import Base, settings, utcnow
 from .models import Organization, Workflow
@@ -35,7 +35,11 @@ def admit_session(db):
     expired = list(
         db.scalars(
             select(Organization.id).where(
-                Organization.is_demo.is_(True), Organization.created_at < cutoff
+                Organization.is_demo.is_(True),
+                or_(
+                    Organization.created_at < cutoff,
+                    Organization.settings["_demo_ended"].as_boolean().is_(True),
+                ),
             )
         )
     )

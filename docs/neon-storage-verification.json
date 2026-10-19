@@ -1,0 +1,11 @@
+{
+  "measured_on": "2026-10-20 Asia/Kolkata",
+  "method": "Neon Console SQL Editor, SELECT pg_database_size(current_database())",
+  "database_bytes": 67993600,
+  "console_size": "65 MB",
+  "demo_tenants": 3,
+  "sales_rows": 195246,
+  "free_plan_storage_bytes": 1000000000,
+  "billing_plan": "Free",
+  "private_data": false
+}

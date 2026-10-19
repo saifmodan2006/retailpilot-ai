@@ -215,3 +215,19 @@ def test_neon_url_normalization_and_tls_requirement():
         Settings(**base, database_url=url)
     configured = Settings(**base, database_url=url + "?sslmode=require")
     assert configured.database_url.startswith("postgresql+psycopg://")
+
+
+def test_public_session_end_revokes_and_reclaims_capacity(client, fixture_data, monkeypatch):
+    monkeypatch.setattr(settings, "public_demo", True)
+    monkeypatch.setattr(settings, "demo_max_tenants", 1)
+    session = client.post("/api/v1/demo/session").json()
+    headers = {"Authorization": "Bearer " + session["access_token"]}
+    assert client.post("/api/v1/demo/session").status_code == 429
+    assert client.post("/api/v1/demo/end", headers=headers).json()["ended"] is True
+    assert client.get("/api/v1/me", headers=headers).status_code == 403
+    replacement = client.post("/api/v1/demo/session")
+    assert replacement.status_code == 200
+    assert replacement.json()["user"]["org_id"] != session["user"]["org_id"]
+    with SessionLocal() as db:
+        assert db.get(Organization, session["user"]["org_id"]) is None
+        assert db.get(Organization, fixture_data["org"]) is not None

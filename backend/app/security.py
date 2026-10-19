@@ -72,8 +72,10 @@ def current_user(
         if not user or user.org_id != claims["org"]:
             raise ValueError("Unknown user")
         rate_limit(request, bucket=f"user:{user.id}")
+        org = db.get(Organization, user.org_id)
+        if org and org.is_demo and org.settings.get("_demo_ended"):
+            raise HTTPException(403, "This demo session has ended. Start a new session.")
         if settings.public_demo:
-            org = db.get(Organization, user.org_id)
             if not org or not org.is_demo or expiry(org) <= utcnow():
                 raise HTTPException(
                     403, "Public demo session expired or organization is not a demo tenant"

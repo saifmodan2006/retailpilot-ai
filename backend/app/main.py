@@ -185,7 +185,18 @@ def me(user: Actor, db: DB):
         "user": serialize(user),
         "organization": db.get(Organization, user.org_id).name,
         "demo": settings.demo_enabled,
+        "public_demo": settings.public_demo,
     }
+
+
+@app.post("/api/v1/demo/end")
+def end_demo(user: Actor, db: DB):
+    if not settings.demo_enabled:
+        raise HTTPException(403, "Demo mode is disabled")
+    org = demo_only(db, user)
+    org.settings = {**org.settings, "_demo_ended": True}
+    audit(db, user, "session.ended", org.id)
+    return {"ended": True}
 
 
 @app.post("/api/v1/demo/role")

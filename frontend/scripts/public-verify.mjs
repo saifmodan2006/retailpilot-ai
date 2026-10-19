@@ -70,9 +70,12 @@ const reports=await call('get','/reports');assert.deepEqual(reports.find(r=>r.id
 assert.equal((await call('get','/analytics')).metrics.revenue,evidence.revenue);
 check('Database records and signed session persist across service restart');
 const pdf=await http.get(`/api/v1/reports/${report.id}/download?format=pdf`,{headers:{Authorization:`Bearer ${token}`}});assert.equal(pdf.status(),200);check('Persisted report exports after restart');
-const dup=await http.post(`/api/v1/imports/${batch.id}/commit`,{headers:{Authorization:`Bearer ${token}`}});assert.equal(dup.status(),409);check('Import remains idempotent after restart');
+const dup=await http.post(`/api/v1/imports/${batch.id}/commit`,{headers:{Authorization:`Bearer ${token}`}});assert.equal(dup.status(),200);assert.equal((await dup.json()).idempotent_replay,true);assert.equal((await call('get','/analytics')).metrics.revenue,evidence.revenue);check('Import remains idempotent after restart');
 assert.equal((await call('post','/analyst/query',{question:'inventory'})).tool,'inventory');check('Analyst works after restart');
 evidence.persistence_after_restart=true;
+await call('post','/demo/end');
+assert.equal((await http.get('/api/v1/me',{headers:{Authorization:`Bearer ${token}`}})).status(),403);
+check('Disposable public test session ended and token revoked');
 await fs.writeFile('../docs/public-runtime-verification.json',JSON.stringify(evidence,null,2));
 await http.dispose();console.log(`PASS: ${evidence.checks.length} public checks and ${evidence.pages.length} workspace routes`);
 process.exit(0);

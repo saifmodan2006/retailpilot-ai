@@ -393,6 +393,9 @@ export default function App() {
     setBusy(true);
     setFailure("");
     try {
+      if (me.data?.public_demo && localStorage.getItem("rp-token")) {
+        await api("/demo/end", { method: "POST" }).catch(() => undefined);
+      }
       const data = await api("/demo/session", { method: "POST" });
       localStorage.setItem("rp-token", data.access_token);
       setActive(true);
@@ -1635,6 +1638,10 @@ function Imports({ act, busy }: ActionProps) {
     }, "Spreadsheet preview ready. Review your mappings and validation results.");
   return (
     <>
+      <div className="info-banner">
+        <ShieldCheck size={18} />
+        <span>Hosted public demos accept only the supplied fictional sample files below. Use a private local instance for your own datasets.</span>
+      </div>
       <ol className="import-stepper" aria-label="Import progress">
         {['Upload file', 'Map columns', 'Review validation', 'Import accepted rows'].map((label, index) => (
           <li key={label} className={(batch ? (batch.status === 'Imported' ? 3 : 2) : 0) >= index ? 'active' : ''}>

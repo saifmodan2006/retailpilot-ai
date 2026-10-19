@@ -1,0 +1,13 @@
+{
+  "inventory_rows": 4320,
+  "memory_limit_bytes": 536870912,
+  "xlsx": {
+    "bytes": 241350,
+    "seconds": 3.69
+  },
+  "pdf": {
+    "bytes": 402328,
+    "seconds": 20.89
+  },
+  "cgroup_peak_bytes": 259801088
+}
