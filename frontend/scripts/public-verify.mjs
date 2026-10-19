@@ -62,7 +62,7 @@ console.log('READY_FOR_RESTART: token retained in memory; press Enter after the 
 await new Promise(resolve=>process.stdin.once('data',resolve));
 let ready=false;const start=Date.now();
 for(let i=0;i<40;i++){
- try{if((await http.get('/api/v1/health',{timeout:5000})).ok()){ready=true;break;}}catch{}
+ try{if((await http.get('/api/v1/health',{timeout:5000})).ok()){ready=true;break;}}catch{/* Temporary unavailability is expected during the deliberate restart. */}
  await new Promise(resolve=>setTimeout(resolve,2000));
 }
 assert(ready,'API did not recover after restart');evidence.restart_recovery_seconds=(Date.now()-start)/1000;
