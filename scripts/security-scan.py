@@ -8,6 +8,8 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 files = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
 patterns = [rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+            rb"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{20,}",
+            rb"npg_[A-Za-z0-9]{10,}",
             rb"gh[pousr]_[A-Za-z0-9]{30,}", rb"github_pat_[A-Za-z0-9_]{40,}",
             rb"AKIA[0-9A-Z]{16}", rb"postgres(?:ql)?(?:\+psycopg)?://[^\s:@]+:(?!replace-with-|ci-only-)[^\s@${}]{16,}@"]
 local_secrets = []

@@ -124,7 +124,10 @@ def seed(db, org_id):
                     }
                 )
     for start in range(0, len(sales), 5000):
-        db.execute(insert(Sale), sales[start : start + 5000])
+        # RETURNING enables SQLAlchemy's paged insertmanyvalues path on psycopg,
+        # avoiding one driver execution per synthetic transaction. Only IDs are
+        # returned, in bounded batches; the generated business data is identical.
+        db.execute(insert(Sale).returning(Sale.id), sales[start : start + 5000]).close()
     inventory = []
     for si, store in enumerate(stores):
         for k, sku in enumerate(skus):
@@ -143,7 +146,7 @@ def seed(db, org_id):
                     - timedelta(days=rng.randint(120, 240) if k >= 340 else rng.randint(7, 75)),
                 }
             )
-    db.execute(insert(Inventory), inventory)
+    db.execute(insert(Inventory).returning(Inventory.id), inventory).close()
     db.add_all(
         [
             StockMovement(

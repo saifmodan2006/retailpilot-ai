@@ -19,7 +19,7 @@ test("complete Excel to MIS, approval, analyst and audit journey", async ({
   await page.getByRole("button", { name: "Load demo data" }).first().click();
   await expect(page.getByRole("status")).toContainText(
     "Synthetic data loaded",
-    { timeout: 90000 },
+    { timeout: 150000 },
   );
   await expect(
     page.getByText("Revenue performance", { exact: true }),

@@ -3,6 +3,11 @@
 **/node_modules
 **/__pycache__
 **/*.db
+**/*.db-*
+**/.pytest_cache
+**/.ruff_cache
+reports
+**/reports
 **/test-results
 **/playwright-report
 **/dist
