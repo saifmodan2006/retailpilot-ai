@@ -32,16 +32,17 @@ stateDiagram-v2
     Failed --> Cancelled
     AwaitingApproval --> Completed: manager approves
     AwaitingApproval --> Rejected: manager rejects
-    AwaitingApproval --> Cancelled
 ```
 
 Daily/weekly reports and stock checks use FastAPI background tasks after the queue row commits. Results and failure details persist. Restart marks interrupted Running jobs Failed, making them explicitly retryable. Saved work and completion state share the execution transaction. Manual repeated idempotency keys reuse their existing row. Purchase review uses a dedicated authorization/state path and a simulated order only. Run a single backend worker; no distributed task guarantee is claimed.
 
 ## Security model
 
-Anonymous demo entry creates a new organization and analyst user, returning an eight-hour signed JWT. Roles are retrieved from the database rather than trusted from UI state. Explicit demo role simulation is gated by DEMO_ENABLED. A caller cannot supply another organization ID to analytics, imports, reports, approvals or the analyst. Record lookup applies both ID and tenant. Requests never accept arbitrary SQL. HTTP bearer tokens are stored locally by the demo frontend; production identity and secure cookie design remain separate work.
+Anonymous demo entry creates a new explicitly marked fictional organization and analyst. JWTs require issuer, audience, issued-at and expiration claims; public sessions last two hours. Roles come from the database. Demo role switching, seeding and session ending require a marked demo organization. Public mode denies private tenants and expired/ended sessions. Every record lookup and analytical query is tenant scoped. No arbitrary SQL is accepted. LocalStorage bearer tokens are appropriate only to this isolated exhibit; organizational identity and secure cookie design remain separate production work.
 
-Upload bounds are 8 MB compressed, 40 MB expanded XLSX, 500 archive members and 20,000 rows. Parsing errors return structured API errors. Formula-like strings are escaped on Excel export. Parameterized ORM queries protect database values. CORS is allowlisted; errors do not return database internals. Session creation is limited to six per minute per IP, authenticated API calls to 180 per minute per IP within this process. Edge/global limits and durable retention quotas are required for a public service. Secrets are generated into ignored `.env`, never embedded in frontend bundles.
+Public hosting uses a dedicated PostgreSQL database, at most four demo tenants, expiration cleanup on later admission and bounded write quotas. Ending a demo revokes access immediately and makes it reclaimable on the next admission. One process serializes public API computation for the 512 MB limit. Rate buckets are bounded and process local: six session attempts/minute per observed client, 180 authenticated requests/minute per user/client. With proxy headers disabled, anonymous admission is conservatively shared behind the host proxy. This is not a distributed edge limiter or a production identity service.
+
+Uploads are capped before multipart parsing (9 MB request envelope; 8 MB file), with 40 MB expanded XLSX, 500 ZIP members, 50 columns and 20,000 rows. Formula cells, macros, encrypted workbooks and ambiguous headers are rejected. Public uploads must match the supplied fictional samples by content hash. Numeric products are checked against database monetary limits and dates are parsed strictly. Excel exports escape formula-like strings. CORS permits only the actual Pages origin, CSP permits the explicit API origin and API responses use no-store. Public OpenAPI pages and outbound LLM/private ERP configuration are disabled. Secrets stay in host environment variables or ignored local .env, never Vite bundles.
 
 LLM execution is optional and read-only: only the user's question and tool allowlist leave the service after environment opt-in. The returned selector is validated and can only route to existing tenant-scoped functions. Business figures and explanations are composed from trusted service results. It cannot place orders. No outbound email/WhatsApp path is active.
 

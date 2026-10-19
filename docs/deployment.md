@@ -28,7 +28,7 @@ Set through Render's environment editor, never Git:
 
 | Variable | Value |
 |---|---|
-| PYTHON_VERSION | 3.12.8 |
+| PYTHON_VERSION | 3.12.15 |
 | DATABASE_URL | Dedicated Neon pooled TLS connection URL |
 | JWT_SECRET | Render-generated stable high-entropy secret |
 | PUBLIC_DEMO / DEMO_ENABLED | true / true |

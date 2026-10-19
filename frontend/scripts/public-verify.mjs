@@ -7,6 +7,7 @@ const frontend=process.env.E2E_BASE_URL??'https://retailpilot-ai.pages.dev';
 const backend=process.env.E2E_API_URL??'https://retailpilot-ai-api.onrender.com';
 const out=path.resolve('../docs/screenshots/public');await fs.mkdir(out,{recursive:true});
 const http=await request.newContext({baseURL:backend,timeout:180000});
+const prior=await fs.readFile('../docs/public-runtime-verification.json','utf8').then(JSON.parse).catch(()=>null);
 let token='';const evidence={frontend,backend,checked_at:new Date().toISOString(),checks:[],pages:[]};
 const check=(name)=>{evidence.checks.push(name);console.log('PASS:',name)};
 const call=async(method,url,data)=>{
@@ -17,6 +18,10 @@ const health=await http.get('/api/v1/health');assert.equal(health.status(),200);
 const session=await call('post','/demo/session');token=session.access_token;
 evidence.organization_id=session.user.org_id;
 await call('post','/demo/seed');check('Isolated fictional dataset seeded');
+if(prior?.report_id && prior.organization_id!==session.user.org_id){
+ const foreign=await http.get(`/api/v1/reports/${prior.report_id}/download`,{headers:{Authorization:`Bearer ${token}`}});
+ assert.equal(foreign.status(),404);check('Another real demo tenant report is inaccessible');
+}
 const before=await call('get','/analytics');
 const arbitrary=await http.post('/api/v1/imports/preview',{headers:{Authorization:`Bearer ${token}`},multipart:{file:{name:'private.csv',mimeType:'text/csv',buffer:Buffer.from('sku,quantity\nPRIVATE,1')}}});
 assert.equal(arbitrary.status(),403);check('Arbitrary public upload denied');
