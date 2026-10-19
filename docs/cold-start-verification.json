@@ -1,0 +1,12 @@
+{
+  "url": "https://retailpilot-ai-api.onrender.com/api/v1/health",
+  "started_at": "2026-10-19T19:22:30.796529+00:00",
+  "idle_seconds": 960,
+  "warm_seconds": 0.516,
+  "wake_seconds": 43.093,
+  "status": 200,
+  "finished_at": "2026-10-19T19:39:15.588350+00:00",
+  "limitation": "Single observation; wake-up timings can vary. Render service logs showed application shutdown before the measured wake request.",
+  "provider_shutdown_observed": true,
+  "provider_shutdown_local_time": "2026-10-20 01:07:34 Asia/Kolkata"
+}

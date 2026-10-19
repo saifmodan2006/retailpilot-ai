@@ -2,7 +2,8 @@
 import {chromium,request} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import fs from 'node:fs/promises';
-const baseURL='http://127.0.0.1:5174'; // Local only: never wakes the public API.
+const baseURL=process.env.LOCAL_AUDIT_BASE_URL??'http://127.0.0.1:5173';
+if(!['127.0.0.1','localhost'].includes(new URL(baseURL).hostname))throw new Error('Accessibility fixture tokens must stay on loopback');
 const http=await request.newContext({baseURL});
 let access_token=process.env.LOCAL_AUDIT_TOKEN;
 if(!access_token){

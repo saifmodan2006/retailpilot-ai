@@ -51,7 +51,7 @@ SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) AS total_size
 FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC;
 ```
 
-A live Neon SQL checkpoint measured **67,993,600 bytes (65 MB)** with two full seeded/imported tenants and one empty tenant, well below the displayed 1 GB allowance. More disposable verification workspaces can temporarily change that total; cleanup reclaims ended/expired tenants on later admission.
+The final live Neon SQL check measured **123,133,952 bytes (117 MB per console)** with four logical demo tenants and 195,246 sales rows, well below the displayed 1 GB allowance. An earlier checkpoint was 65 MB. Physical allocation includes reusable space from deleted test tenants; logical cleanup does not immediately shrink every database file. More disposable verification workspaces can temporarily change that total; cleanup reclaims ended/expired tenants on later admission.
 
 The isolated local PostgreSQL check used **38,303,411 bytes** after one full tenant, imported rows, saved reports and an empty tenant. Four tenants leave headroom; WAL/history, indexes and traffic still require monitoring. Expired marked demo tenants are deleted on later session admission. Explicit session ending revokes access immediately and makes the marked fictional tenant reclaimable on later admission. This is bounded demo lifecycle management, not backups or unattended maintenance.
 
@@ -68,3 +68,18 @@ Render Free sleeps after inactivity and shares monthly runtime limits across the
 Verify HTTPS, exact CORS, direct workspace refresh, all pages, import ? validation ? import ? reorder ? approval ? XLSX/PDF ? analyst, tenant isolation, denied arbitrary uploads, persistence and an explicit service restart. Configuration is not deployment proof; actual results belong in [verification.md](verification.md).
 
 Official references: [Cloudflare React Pages](https://developers.cloudflare.com/pages/framework-guides/deploy-a-react-site/), [Render Free](https://render.com/docs/free), [Render Python](https://render.com/docs/python-version), [Neon Free storage announcement](https://neon.com/blog/neon-free-plan-1-gb-per-project).
+
+## Observed idle wake-up
+
+A controlled 16-minute window sent no application requests after the warm probe. Render logs showed the application shutting down at 01:07:34 Asia/Kolkata on 20 October 2026. The subsequent real health request returned HTTP 200 in **43.093 seconds**; the earlier warm request took **0.516 seconds**. This is one measurement, not a latency guarantee. No keep-alive service or paid always-on instance was enabled. See [cold-start-verification.json](cold-start-verification.json).
+
+## Reproduce the local memory check
+
+```powershell
+docker build -f Dockerfile.release -t retailpilot-release:local .
+.\.venv\Scripts\python scripts/start-release-check.py
+# Open http://127.0.0.1:5180 and seed a fictional demo session.
+.\.venv\Scripts\python scripts/profile-large-export.py
+```
+
+The helper uses a separate local `retailpilot_release` database and a container with a hard 512 MB limit. Its credentials remain in memory. After checking, stop and remove only the disposable `retailpilot-release-check` container; the normal four-service Docker stack and PostgreSQL volume remain intact. The recorded export evidence remains in this repository.

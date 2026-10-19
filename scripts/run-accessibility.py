@@ -20,7 +20,13 @@ with SessionLocal() as db:
         .limit(1)
     )
     assert user, "Load a local fictional demo first"
-    env = dict(os.environ, LOCAL_AUDIT_TOKEN=token(user), E2E_BASE_URL="http://127.0.0.1:5174")
+    local_base = os.environ.get("LOCAL_AUDIT_BASE_URL", "http://127.0.0.1:5173")
+    env = dict(
+        os.environ,
+        LOCAL_AUDIT_TOKEN=token(user),
+        LOCAL_AUDIT_BASE_URL=local_base,
+        E2E_BASE_URL=local_base,
+    )
     command = (
         ["node", "scripts/visual-audit.mjs", "after"]
         if "--visual" in sys.argv

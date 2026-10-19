@@ -19,7 +19,7 @@ Cloudflare Pages serves React/Vite; Render Free runs native FastAPI; isolated Ne
 | Ruff / ESLint | Passed |
 | Strict TypeScript and Vite production build | Passed locally, in Docker and in GitHub CI |
 | Latest local Docker Playwright journey | **2 passed in 1.8 minutes** |
-| Initial public Playwright journey | **2 passed in 3.1 minutes** |
+| Final public Playwright journey, including cleanup of disposable sessions | **2 passed in 3.5 minutes** |
 | Expanded public acceptance | **25 checks and all 12 workspace routes passed**, including a deliberate service redeployment |
 | Responsive visual matrix | **52 captures**: 13 routes including landing, at 1440x900, 1280x800, 768x1024 and 390x844; no document overflow or role alerts |
 | Targeted automated accessibility | **13 routes, zero violations** for checked WCAG 2/2.1 A/AA rules; four incomplete checks remain manual |
@@ -29,11 +29,11 @@ Cloudflare Pages serves React/Vite; Render Free runs native FastAPI; isolated Ne
 | Full 4,320-row inventory XLSX/PDF in a hard 512 MB container | Passed; memory peak **259,801,088 bytes (~248 MiB)** |
 | Large export timing | XLSX **3.69 seconds / 241,350 bytes**; PDF **20.89 seconds / 402,328 bytes** |
 | Live bounded seed | **63.719 seconds**, exact manifest counts, unchanged baseline revenue and inventory value |
-| Live Neon storage checkpoint | **67,993,600 bytes (65 MB)** at three demo tenants / 195,246 sales rows; displayed Free allowance **1 GB** |
+| Live Neon storage checkpoint | **123,133,952 bytes (117 MB per console)** at four demo tenants / 195,246 sales rows; displayed Free allowance **1 GB** |
 | Python runtime dependency advisory audit | No known vulnerabilities after patching three packages |
 | npm audit | Zero findings |
 | Tracked-file secret scan | Passed, including ZIP/XLSX members and comparison with ignored local secrets |
-| Genuine idle wake-up | In progress; the resulting measurement is recorded separately when complete |
+| Genuine idle wake-up | After **960 seconds** without test-generated requests: **43.093 seconds**, HTTP 200; warm probe **0.516 seconds**. Render shutdown observed before wake. |
 
 The full workflow verifies 15 accepted and four rejected workbook rows, an exact INR 55,532.25 revenue increment, explained recommendations, analyst approval denial, manager approval, simulated drafts, formatted XLSX/PDF, all six deterministic analyst tools, forecasting and the audit trail. No actual supplier order or external notification is sent.
 
@@ -47,6 +47,7 @@ The public acceptance also verifies another real demo tenant's report returns 40
 - [Neon SQL storage result](neon-storage-verification.json)
 - [512 MB export profile](export-resource-verification.json)
 - [Live seed measurement](seed-performance-verification.json)
+- [Idle wake-up measurement](cold-start-verification.json)
 - [Dependency audit](dependency-audit.json)
 - [Targeted accessibility results](accessibility-verification.json)
 - [Local simulator/runtime evidence](runtime-verification.json)
@@ -67,6 +68,8 @@ npm run lint
 npm run build
 npm run test:e2e
 node scripts/visual-audit.mjs after
+cd ..
+.\.venv\Scripts\python scripts/run-accessibility.py
 ```
 
 The browser tests target localhost by default. For public verification, set `E2E_BASE_URL` to the Pages origin and `E2E_API_URL` to the Render origin. `scripts/public-verify.mjs` uses a disposable fictional session, pauses for an operator-authorized Render restart, then checks persistence and ends that session. Tokens remain in process memory. The current free-capacity limit may require waiting for a prior session to end or expire; do not create more resources or raise quotas to bypass it.
