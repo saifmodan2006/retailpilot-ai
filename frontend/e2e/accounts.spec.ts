@@ -100,6 +100,7 @@ test("password recovery, expired session state and honest unconfigured authentic
  await page.getByRole("button",{name:"Send recovery email"}).click();
  await expect(page.getByRole("status")).toContainText("eligible account");
  await page.getByRole("link",{name:"I have a recovery code"}).click();
+ await expect(page.getByRole("heading",{name:"Recover your account",exact:true})).toBeVisible();
  await page.getByLabel("Email address").fill("other@example.test");await page.getByLabel("Verification code").fill("123456");
  await page.getByRole("button",{name:"Verify code"}).click();
  await expect(page).toHaveURL(/auth\/reset-password/);
