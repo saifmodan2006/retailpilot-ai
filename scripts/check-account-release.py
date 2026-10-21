@@ -37,11 +37,13 @@ with httpx.Client(timeout=120) as client:
     r = client.post(origin + "/api/v1/auth/login", headers={"Origin": "https://attacker.example", "X-RP-CSRF": "1"},
                     json={"email": "blocked@example.test", "password": "fictional-unusable-passphrase"})
     check("Forged Origin rejected", r.status_code == 403)
-    for path in ("/", "/auth/login", "/auth/signup", "/auth/callback", "/onboarding/", "/app/overview"):
+    for path in ("/", "/auth/login", "/auth/signup", "/auth/callback", "/privacy/", "/onboarding/", "/app/overview"):
         r = client.get(origin + path)
         check("SPA refresh: " + path, r.status_code == 200 and "<html" in r.text.lower())
     r = client.get(origin + "/onboarding", follow_redirects=True)
     check("Onboarding canonical redirect preserves route", r.status_code == 200 and r.url.path == "/onboarding/")
+    r = client.get(origin + "/privacy", follow_redirects=True)
+    check("Privacy canonical redirect preserves route", r.status_code == 200 and r.url.path == "/privacy/")
     for path in ("/docs", "/openapi.json"):
         check("Public API docs restricted: " + path, client.get(api + path).status_code == 404)
     r = client.options(api + "/api/v1/me", headers={"Origin": "https://attacker.example", "Access-Control-Request-Method": "GET"})

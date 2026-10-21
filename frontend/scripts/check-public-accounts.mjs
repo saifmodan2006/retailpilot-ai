@@ -22,6 +22,13 @@ try {
    await page.screenshot({path:`../docs/screenshots/accounts/live-${route}-${width}.png`,fullPage:true});
    evidence.pages.push({route,width,axe_violations:0,horizontal_overflow:false});
   }
+  await page.goto(`${evidence.origin}/privacy/`);
+  await page.getByRole("heading",{name:"Privacy information",exact:true}).waitFor();
+  const privacyAxe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze();
+  assert.deepEqual(privacyAxe.violations,[],`privacy at ${width}px`);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await page.screenshot({path:`../docs/screenshots/accounts/live-privacy-${width}.png`,fullPage:true});
+  evidence.pages.push({route:"privacy",width,axe_violations:0,horizontal_overflow:false});
  }
  await page.goto(`${evidence.origin}/onboarding/`);
  await page.waitForURL("**/auth/login");
