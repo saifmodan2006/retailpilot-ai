@@ -1,11 +1,11 @@
 {
-  "checked_at": "2026-10-21T02:18:04.951887+00:00",
+  "checked_at": "2026-10-21T02:27:35.017961+00:00",
   "frontend": "https://retailpilot-ai.pages.dev",
   "api": "https://retailpilot-ai-api.onrender.com",
   "checks": [
     "Direct API HTTPS health",
     "Pages Functions reaches actual account API",
-    "Registration closed",
+    "Restricted pilot UI enabled",
     "Arbitrary uploads closed",
     "Google disabled",
     "Identity responses never cached",
@@ -13,7 +13,7 @@
     "Anonymous rejected: organizations",
     "Anonymous rejected: organizations/current/team",
     "Anonymous rejected: me",
-    "Signup rejected while closed",
+    "Non-admitted signup rejected",
     "Forged Origin rejected",
     "SPA refresh: /",
     "SPA refresh: /auth/login",
@@ -25,5 +25,6 @@
     "Public API docs restricted: /docs",
     "Public API docs restricted: /openapi.json",
     "CORS rejects unrelated origin"
-  ]
+  ],
+  "registration_mode": "Approved restricted pilot"
 }

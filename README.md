@@ -19,8 +19,9 @@ Hosted on Cloudflare Pages Free, Render Free and isolated Neon Free PostgreSQL. 
 ## Persistent accounts pilot
 
 Persistent accounts, private organizations and five server-enforced roles are
-implemented as a restricted Supabase Auth pilot. Public registration and real
-business uploads remain closed. The [account release report](docs/saas-upgrade.md)
+implemented as a restricted Supabase Auth pilot. General registration and real
+business uploads remain closed; only the explicitly admitted owner pilot is eligible.
+The [account release report](docs/saas-upgrade.md)
 documents migrations, permissions, verification scope and remaining live email
 checks. Provider mocks establish integration behavior, not delivered production emails.
 

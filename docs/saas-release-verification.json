@@ -7,7 +7,7 @@
   "migration": {"production_revision": "c8d3_persistent_accounts", "new_tables": 6, "persistent_accounts": 0, "memberships": 0, "database_bytes_at_query": 75382784, "verified_via": "Read-only Neon production SQL", "checkpoint": "br-fancy-morning-ar08xyj9"},
   "dependencies": {"runtime_packages": 47, "known_vulnerabilities_after_patch": 0, "patched": "certifi 2026.10.18 -> 2026.10.19 after PYSEC-2026-4320 CI finding", "detail": "dependency-audit.json"},
   "checks_passed": ["Ruff", "ESLint", "TypeScript", "Vite production build", "Docker backend/frontend/release builds", "Fixed-origin cookie proxy", "Staged secret scan: 260 files, 284 payloads"],
-  "restrictions": {"registration": false, "real_uploads": false, "google": false, "invitation_email_delivery": false},
+  "restrictions": {"general_registration": false, "owner_pilot_explicitly_approved": true, "real_uploads": false, "google": false, "invitation_email_delivery": false},
   "live_owner_lifecycle": "Pending owner-entered password and delivered-email verification. Mocks do not prove live delivery.",
   "public_http_checks": 22,
   "public_account_browser_captures": 9,

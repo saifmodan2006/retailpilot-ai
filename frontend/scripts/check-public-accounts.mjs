@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import {writeFile} from "node:fs/promises";
 
 const browser=await chromium.launch();
+const pilot=process.argv.includes("--pilot");
 const evidence={origin:"https://retailpilot-ai.pages.dev",checked_at:new Date().toISOString(),pages:[]};
 try {
  const context=await browser.newContext();
@@ -14,7 +15,7 @@ try {
   for(const route of ["signup","login","callback"]) {
    await page.goto(`${evidence.origin}/auth/${route}`);
    if(route!=="callback") await page.getByRole("button",{name:route==="signup"?"Create free account":"Sign in",exact:true}).waitFor();
-   if(route==="signup") await page.getByText("Registration is closed during security validation.").waitFor();
+   if(route==="signup") await page.getByText(pilot?"Registration is limited to explicitly invited pilot participants. General registration is closed.":"Registration is closed during security validation.").waitFor();
    const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze();
    assert.deepEqual(axe.violations,[],`${route} at ${width}px`);
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

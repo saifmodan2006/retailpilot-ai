@@ -42,7 +42,9 @@ uses confirmed email, default email templates and official SDK PKCE exchange.
 An encrypted server-side verifier and expiring HttpOnly challenge cookie bind
 email links to the requesting browser. Callback query/fragment data is cleared.
 Recovery sessions cannot access retail APIs. The Data API, anonymous sign-ins,
-manual linking and Google are disabled. Global signup remains closed.
+manual linking and Google are disabled. Unrestricted signup remains closed.
+The owner explicitly approved a single-email pilot on 21 October; provider and
+backend allowlists restrict eligibility to that owner. No real address is committed.
 
 Site URL: `https://retailpilot-ai.pages.dev`. Allowed redirects on that origin:
 `/auth/callback`, `/auth/verify`, `/auth/recovery`, `/auth/reset-password`.
@@ -152,7 +154,7 @@ captures passed targeted Axe checks: [public browser evidence](saas-public-brows
 ## 10. Deployment status and configuration
 
 Status on 21 October 2026: account API and frontend deployed. Live owner email
-validation remains pending; registration stays closed. Public links:
+validation remains pending; only the approved owner pilot is admitted. Public links:
 [frontend](https://retailpilot-ai.pages.dev/),
 [API health](https://retailpilot-ai-api.onrender.com/api/v1/health),
 [GitHub](https://github.com/saifmodan2006/retailpilot-ai).

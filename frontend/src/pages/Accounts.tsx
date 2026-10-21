@@ -48,6 +48,7 @@ export default function AuthPage() {
    <button className="btn primary" disabled={busy||!config||Boolean(unavailable)||(mode==="signup"&&!config.registration)}>{busy&&<Loader2 size={17} className="spin"/>}{mode==="login"?"Sign in":mode==="signup"?"Create free account":mode==="forgot-password"?"Send recovery email":mode==="reset-password"?"Save new password":"Verify code"}</button>
    {mode==="verify"&&<button className="btn" type="button" disabled={busy||Boolean(unavailable)||!config} onClick={async e=>{const email=new FormData(e.currentTarget.form!).get("email");setBusy(true);setError("");try{const result=await api("/auth/resend",{method:"POST",body:JSON.stringify({email})});setNotice(result.message);}catch(err){setError((err as Error).message);}finally{setBusy(false);}}}>Resend verification email</button>}
    {mode==="signup"&&config?.configured&&!config.registration&&<p className="account-notice">Registration is closed during security validation.</p>}
+   {mode==="signup"&&config?.configured&&config.registration&&<p className="account-notice">Registration is limited to explicitly invited pilot participants. General registration is closed.</p>}
   </form>}
   <div className="account-links"><Link to="/auth/login">Sign in</Link><Link to="/auth/signup">Create free account</Link><Link to="/auth/forgot-password">Forgot password?</Link><Link to="/auth/recovery">Account recovery</Link></div>
   {mode==="forgot-password"&&<Link className="text-link" to="/auth/recovery">I have a recovery code</Link>}

@@ -1,6 +1,7 @@
 """Non-destructive public account boundary checks. Never signs up a real user."""
 
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -9,6 +10,8 @@ import httpx
 origin = "https://retailpilot-ai.pages.dev"
 api = "https://retailpilot-ai-api.onrender.com"
 evidence = {"checked_at": datetime.now(timezone.utc).isoformat(), "frontend": origin, "api": api, "checks": []}
+pilot = "--pilot" in sys.argv
+evidence["registration_mode"] = "Approved restricted pilot" if pilot else "Closed"
 
 
 def check(name, condition):
@@ -21,7 +24,7 @@ with httpx.Client(timeout=120) as client:
     r = client.get(origin + "/api/v1/auth/config")
     config = r.json()
     check("Pages Functions reaches actual account API", r.status_code == 200 and config["configured"])
-    check("Registration closed", not config["registration"])
+    check("Restricted pilot UI enabled" if pilot else "Registration closed", config["registration"] == pilot)
     check("Arbitrary uploads closed", not config["real_uploads"])
     check("Google disabled", not config["google"])
     check("Identity responses never cached", r.headers.get("cache-control") == "no-store")
@@ -30,7 +33,7 @@ with httpx.Client(timeout=120) as client:
     headers = {"Origin": origin, "X-RP-CSRF": "1"}
     r = client.post(origin + "/api/v1/auth/signup", headers=headers,
                     json={"email": "blocked@example.test", "password": "fictional-unusable-passphrase"})
-    check("Signup rejected while closed", r.status_code == 403)
+    check("Non-admitted signup rejected", r.status_code == 403)
     r = client.post(origin + "/api/v1/auth/login", headers={"Origin": "https://attacker.example", "X-RP-CSRF": "1"},
                     json={"email": "blocked@example.test", "password": "fictional-unusable-passphrase"})
     check("Forged Origin rejected", r.status_code == 403)
