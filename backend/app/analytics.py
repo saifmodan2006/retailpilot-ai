@@ -19,6 +19,7 @@ from .models import (
     Membership,
 )
 from .seed import AS_OF
+from .core import business_today
 
 
 class Filters(BaseModel):
@@ -43,7 +44,7 @@ def workspace_filters(db, org, days=30):
             and db.scalar(select(Membership.id).where(Membership.org_id == org).limit(1))):
         latest = [db.scalar(select(func.max(model.date)).where(model.org_id == org))
                   for model in (Sale, Inventory)]
-        end = max((d for d in latest if d), default=date.today())
+        end = max((d for d in latest if d), default=business_today(organization.settings.get("timezone", "Asia/Kolkata")))
     return Filters(start=end - timedelta(days=days - 1), end=end)
 
 

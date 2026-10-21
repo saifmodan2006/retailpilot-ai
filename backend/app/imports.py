@@ -12,7 +12,8 @@ from openpyxl import load_workbook
 from fastapi import HTTPException
 from sqlalchemy import select
 
-from .models import ImportBatch, Inventory, SKU, Sale, Store, ValidationError
+from .models import ImportBatch, Inventory, Organization, SKU, Sale, Store, ValidationError
+from .core import business_today
 
 SALES_FIELDS = [
     "transaction_id",
@@ -145,6 +146,7 @@ def parse_date(value):
 
 
 def validate(db, org, raw, mapping, kind):
+    today = business_today(db.get(Organization, org).settings.get("timezone", "Asia/Kolkata"))
     stores = {s.code: s for s in db.scalars(select(Store).where(Store.org_id == org))}
     skus = {s.code: s for s in db.scalars(select(SKU).where(SKU.org_id == org))}
     required = ["date", "store", "sku", "quantity"] + (
@@ -178,7 +180,7 @@ def validate(db, org, raw, mapping, kind):
             if row["sku"] not in skus:
                 raise ValueError("Unknown SKU")
             day = parse_date(row["date"])
-            if day > date.today():
+            if day > today:
                 raise ValueError("Future business date is not allowed")
             qty = number(row["quantity"])
             if qty != int(qty) or abs(qty) > 1000000:

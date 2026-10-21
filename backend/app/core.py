@@ -163,6 +163,12 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
+def business_today(timezone_name="Asia/Kolkata"):
+    from zoneinfo import ZoneInfo
+
+    return utcnow().astimezone(ZoneInfo(timezone_name)).date()
+
+
 def get_db():
     with SessionLocal() as db:
         try:

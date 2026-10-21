@@ -17,6 +17,16 @@ ROW = {"sku": "OWN-001", "product": "Fictional test product", "brand": "Test bra
        "price": "100.00", "lead_days": 7, "moq": 1, "pack_size": 1}
 
 
+def test_business_date_uses_workspace_timezone_at_midnight(monkeypatch):
+    from datetime import datetime, timezone
+    from app import core
+
+    monkeypatch.setattr(core, "utcnow", lambda: datetime(2026, 10, 21, 20, 30, tzinfo=timezone.utc))
+    assert core.business_today("Asia/Kolkata").isoformat() == "2026-10-22"
+    assert core.business_today("UTC").isoformat() == "2026-10-21"
+    assert core.business_today("America/Los_Angeles").isoformat() == "2026-10-21"
+
+
 @pytest.mark.usefixtures("identity")
 def test_private_catalog_import_and_date_driven_analytics(client, monkeypatch):
     register(client)
