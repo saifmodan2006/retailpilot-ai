@@ -10,13 +10,12 @@ from fastapi import (
     FastAPI,
     File,
     HTTPException,
-    Query,
     Request,
     UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError as ModelValidationError
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -24,7 +23,7 @@ from sqlalchemy.orm import Session
 from . import analyst, imports
 from .demo import admit_session, demo_only, permitted_upload, quota
 from .ingress import BodyLimitMiddleware, DemoResourceMiddleware
-from .analytics import Filters, analytics, catalog, inventory_metrics, records
+from .analytics import Filters, analytics, catalog, inventory_metrics, records, workspace_filters
 from .core import SessionLocal, get_db, settings, utcnow
 from .forecasting import forecast
 from .models import (
@@ -97,10 +96,28 @@ app.include_router(organizations_router)
 from .team import router as team_router  # noqa: E402
 
 app.include_router(team_router)
+from .private_catalog import router as private_catalog_router  # noqa: E402
+
+app.include_router(private_catalog_router)
 DB = Annotated[Session, Depends(get_db, scope="function")]
 Actor = Annotated[User, Depends(current_user)]
 Manager = Annotated[User, Depends(manager)]
-Scope = Annotated[Filters, Query()]
+
+
+def reporting_filters(request, db, user, model=Filters, history_days=30):
+    values = workspace_filters(db, user.org_id, days=history_days).model_dump()
+    values.update({k: v for k, v in request.query_params.items() if k in model.model_fields})
+    try:
+        return model.model_validate(values)
+    except ModelValidationError as exc:
+        raise HTTPException(422, "Invalid reporting date range, identifiers or horizon") from exc
+
+
+def scope_filters(request: Request, user: Actor, db: DB):
+    return reporting_filters(request, db, user)
+
+
+Scope = Annotated[Filters, Depends(scope_filters)]
 
 
 @app.middleware("http")
@@ -240,6 +257,7 @@ def demo_seed(user: Actor, db: DB):
 @app.get("/api/v1/catalog")
 def get_catalog(user: Actor, db: DB):
     return {
+        "default_filters": workspace_filters(db, user.org_id).model_dump(mode="json", exclude_none=True),
         "stores": [
             serialize(r) for r in db.scalars(select(Store).where(Store.org_id == user.org_id))
         ],
@@ -303,11 +321,14 @@ async def preview_upload(
     from .models import Membership
 
     private = bool(db.scalar(select(Membership.id).where(Membership.actor_id == user.id)))
-    permitted_upload(content, private=private)
+    own_data = private and not db.get(Organization, user.org_id).settings.get("_synthetic")
+    permitted_upload(content, private=own_data)
     quota(db, user, ImportBatch, 12)
-    batch = imports.preview(db, user.org_id, content, file.filename or "", kind)
-    if private and len(batch.payload) > 2000:
-        raise HTTPException(413, "Private pilot imports support at most 2,000 rows per file.")
+    batch = imports.preview(db, user.org_id, content, file.filename or "", kind, private=private)
+    if private:
+        from .capacity import storage_budget
+
+        storage_budget(db)
     audit(
         db,
         user,
@@ -360,6 +381,9 @@ def commit(ident: int, user: Actor, db: DB, background: BackgroundTasks):
         )
         if count + batch.accepted > maximum:
             raise HTTPException(429, "Workspace row quota reached. No data was imported.")
+        from .capacity import storage_budget
+
+        storage_budget(db, **{batch.kind: batch.accepted})
     changed = imports.commit_import(db, batch)
     if changed:
         audit(
@@ -428,7 +452,7 @@ def submit_approval(ident: int, user: Actor, db: DB):
     matching = next(
         (
             r
-            for r in inventory_metrics(db, user.org_id, Filters(), config(db, user))
+            for r in inventory_metrics(db, user.org_id, workspace_filters(db, user.org_id), config(db, user))
             if r["store_id"] == rec.store_id and r["sku_id"] == rec.sku_id
         ),
         None,
@@ -489,7 +513,7 @@ def decision(ident: int, body: DecisionBody, user: Manager, db: DB):
         matching = next(
             (
                 r
-                for r in inventory_metrics(db, user.org_id, Filters(), config(db, user))
+                for r in inventory_metrics(db, user.org_id, workspace_filters(db, user.org_id), config(db, user))
                 if r["store_id"] == rec.store_id and r["sku_id"] == rec.sku_id
             ),
             None,
@@ -543,8 +567,12 @@ class ForecastFilters(Filters):
     horizon: int = Field(default=30, ge=7, le=30)
 
 
+def forecast_filters(request: Request, user: Actor, db: DB):
+    return reporting_filters(request, db, user, ForecastFilters, history_days=365)
+
+
 @app.get("/api/v1/forecasts")
-def get_forecast(user: Actor, db: DB, filters: Annotated[ForecastFilters, Query()]):
+def get_forecast(user: Actor, db: DB, filters: Annotated[ForecastFilters, Depends(forecast_filters)]):
     if filters.horizon not in [7, 30]:
         raise HTTPException(422, "Forecast horizon must be 7 or 30 days")
     result = forecast(db, user.org_id, filters, filters.horizon)
@@ -594,7 +622,8 @@ def generate_report(body: ReportBody, user: Actor, db: DB):
     if body.kind not in REPORT_TYPES:
         raise HTTPException(422, "Unsupported report type")
     quota(db, user, Report, 30)
-    report = create_report(db, user.org_id, body.kind, body.filters, config(db, user))
+    filters = body.filters if "filters" in body.model_fields_set else workspace_filters(db, user.org_id)
+    report = create_report(db, user.org_id, body.kind, filters, config(db, user))
     audit(
         db,
         user,
@@ -649,7 +678,8 @@ def questions(user: Actor):
 
 @app.post("/api/v1/analyst/query")
 def query_analyst(body: QuestionBody, user: Actor, db: DB):
-    result = analyst.answer(db, user.org_id, body.question, body.filters, config(db, user))
+    filters = body.filters if "filters" in body.model_fields_set else workspace_filters(db, user.org_id)
+    result = analyst.answer(db, user.org_id, body.question, filters, config(db, user))
     audit(db, user, "analyst.queried", result["tool"])
     return result
 
@@ -761,13 +791,14 @@ class SettingsBody(BaseModel):
 
 @app.get("/api/v1/settings")
 def get_settings(user: Actor, db: DB):
+    org = db.get(Organization, user.org_id)
     return {
         "planning": config(db, user),
-        "as_of": str(AS_OF),
+        "as_of": str(workspace_filters(db, user.org_id).end),
         "llm_enabled": settings.llm_enabled and bool(settings.llm_api_key),
-        "timezone": "Asia/Kolkata",
-        "currency": "INR",
-        "demo": settings.demo_enabled,
+        "timezone": org.settings.get("timezone", "Asia/Kolkata"),
+        "currency": org.settings.get("currency", "INR"),
+        "demo": settings.demo_enabled and org.is_demo,
     }
 
 

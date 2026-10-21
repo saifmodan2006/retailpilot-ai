@@ -33,7 +33,7 @@ os.environ.update(
         "APP_ORIGIN": "http://127.0.0.1:5174",
         "CORS_ORIGINS": "http://127.0.0.1:5174",
         "ACCOUNT_COOKIE_SECURE": "false",
-        "REAL_UPLOADS_ENABLED": "false",
+        "REAL_UPLOADS_ENABLED": "true" if os.environ.get("RETAILPILOT_PRIVATE_DATA_TEST") == "1" else "false",
     }
 )
 

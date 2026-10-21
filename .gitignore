@@ -12,6 +12,7 @@ __pycache__/
 .agents/
 *.pem
 *.key
+client_secret_*.json
 reports/
 test-results/
 playwright-report/

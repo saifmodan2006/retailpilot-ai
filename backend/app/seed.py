@@ -24,6 +24,9 @@ SEED = 271828
 def seed(db, org_id):
     if db.scalar(select(Store.id).where(Store.org_id == org_id).limit(1)):
         return {"already_loaded": True}
+    from .capacity import storage_budget
+
+    storage_budget(db, sales=97608, inventory=4320)
     rng = random.Random(SEED)
     locations = [
         ("Ahmedabad", "CG Road"),

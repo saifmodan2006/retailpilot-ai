@@ -41,9 +41,9 @@ def normalize(name):
     return ALIASES.get(key, key)
 
 
-def read_file(content, filename):
-    if len(content) > 8 * 1024 * 1024:
-        raise HTTPException(413, "Maximum upload size is 8 MB")
+def read_file(content, filename, max_rows=20000, max_bytes=8 * 1024 * 1024):
+    if len(content) > max_bytes:
+        raise HTTPException(413, f"Maximum upload size is {max_bytes // 1024} KB")
     try:
         if filename.lower().endswith(".csv"):
             header = next(csv.reader(io.StringIO(content.decode("utf-8-sig"))))
@@ -52,13 +52,13 @@ def read_file(content, filename):
                 raise ValueError("Maximum 50 distinct, unambiguous columns")
             frames = {
                 "CSV": pd.read_csv(
-                    io.BytesIO(content), dtype=str, keep_default_na=False, nrows=20001
+                    io.BytesIO(content), dtype=str, keep_default_na=False, nrows=max_rows + 1
                 )
             }
         elif filename.lower().endswith(".xlsx"):
             with zipfile.ZipFile(io.BytesIO(content)) as archive:
                 if (
-                    sum(i.file_size for i in archive.infolist()) > 40 * 1024 * 1024
+                    sum(i.file_size for i in archive.infolist()) > (10 if max_rows < 20000 else 40) * 1024 * 1024
                     or len(archive.infolist()) > 500
                 ):
                     raise HTTPException(413, "Workbook expands beyond safe limits")
@@ -72,19 +72,21 @@ def read_file(content, filename):
                 for sheet in workbook:
                     if sheet.max_column and sheet.max_column > 50:
                         raise ValueError("Maximum 50 columns per sheet")
-                    for i, cells in enumerate(islice(sheet.iter_rows(), 20002)):
+                    for i, cells in enumerate(islice(sheet.iter_rows(), max_rows + 2)):
                         if i == 0:
                             names = [normalize(c.value) for c in cells if c.value is not None]
                             if len(names) != len(set(names)):
                                 raise ValueError("Duplicate or ambiguous column names")
                         else:
                             count += 1
-                        if count > 20000:
-                            raise HTTPException(413, "Maximum 20,000 rows per upload")
+                        if count > max_rows:
+                            raise HTTPException(413, f"Maximum {max_rows:,} rows per upload")
                         if any(c.data_type == "f" for c in cells):
                             raise ValueError(
                                 "Formula cells are not accepted. Upload a values-only workbook."
                             )
+                        if max_rows < 20000 and any(len(str(c.value or "")) > 120 for c in cells):
+                            raise ValueError("Business field values must be at most 120 characters")
             finally:
                 workbook.close()
             frames = pd.read_excel(
@@ -96,8 +98,8 @@ def read_file(content, filename):
             )
         else:
             raise HTTPException(415, "Only .csv and .xlsx are supported")
-        if sum(len(f) for f in frames.values()) > 20000:
-            raise HTTPException(413, "Maximum 20,000 rows per upload")
+        if sum(len(f) for f in frames.values()) > max_rows:
+            raise HTTPException(413, f"Maximum {max_rows:,} rows per upload")
         raw = []
         columns = set()
         for sheet, frame in frames.items():
@@ -236,8 +238,13 @@ def validate(db, org, raw, mapping, kind):
     return valid, errors
 
 
-def preview(db, org, content, filename, kind):
-    raw, columns = read_file(content, filename)
+def preview(db, org, content, filename, kind, private=False):
+    raw, columns = read_file(content, filename, max_rows=2000 if private else 20000,
+                             max_bytes=1024 * 1024 if private else 8 * 1024 * 1024)
+    if private:
+        for row in raw:
+            if any(len(v) > 120 for v in row["values"].values()):
+                raise HTTPException(422, "Business field values must be at most 120 characters")
     digest = hashlib.sha256(content + kind.encode()).hexdigest()
     batch = db.scalar(
         select(ImportBatch).where(ImportBatch.org_id == org, ImportBatch.fingerprint == digest)

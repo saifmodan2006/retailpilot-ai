@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from .analytics import analytics, inventory_metrics
 from .core import settings
+from .models import Organization
 
 QUESTIONS = {
     "stores": "Which stores had the highest sales last month?",
@@ -115,7 +116,7 @@ def answer(db, org, question, filters, config):
         rows, text = (
             [
                 {
-                    "metric": "Inventory at purchase cost (INR)",
+                    "metric": f"Inventory at purchase cost ({config.get('currency', 'INR')})",
                     "value": data["metrics"]["inventory_value"],
                 }
             ],
@@ -172,7 +173,7 @@ def answer(db, org, question, filters, config):
             },
             {"period": "Last calendar month", "revenue": data["metrics"]["revenue"]},
             {
-                "period": "Change (INR)",
+                "period": f"Change ({config.get('currency', 'INR')})",
                 "revenue": round(data["metrics"]["revenue"] - previous["metrics"]["revenue"], 2),
             },
         ]
@@ -185,5 +186,7 @@ def answer(db, org, question, filters, config):
         "explanation": text,
         "rows": rows,
         "filters": f.model_dump(mode="json"),
-        "data_label": "Synthetic demonstration data",
+        "data_label": "Synthetic demonstration data"
+        if db.get(Organization, org).is_demo or config.get("_synthetic")
+        else "Organization workspace data",
     }

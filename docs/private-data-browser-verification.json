@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-10-21T20:21:50.824Z",
+  "provider": "isolated mocked identity; not live hosted account",
+  "catalog_and_store_setup": true,
+  "catalog_axe_widths": [
+    1440,
+    768,
+    390
+  ],
+  "axe_violations": 0,
+  "sales_and_inventory_import": true,
+  "correct_default_end": "2026-10-22",
+  "revenue": 200,
+  "inventory_value": 400,
+  "refresh_persistence": true,
+  "xlsx_export": true,
+  "analyst": true
+}

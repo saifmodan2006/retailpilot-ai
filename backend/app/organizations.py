@@ -54,6 +54,7 @@ def org_info(db, org, member):
         "name": org.name,
         "created_at": org.created_at,
         "role": member.role,
+        "data_mode": "synthetic" if org.settings.get("_synthetic") else "private",
         "settings": {k: v for k, v in org.settings.items() if not k.startswith("_")},
         "owners": list(
             db.scalars(
@@ -379,6 +380,9 @@ def sample_data(request: Request, db: DB):
     if org.settings.get("currency", "INR") != "INR":
         raise HTTPException(409, "The fictional sample uses INR. Select INR before loading it.")
     result = seed(db, org.id)
+    from .capacity import storage_budget
+
+    storage_budget(db)
     recommendations(db, org.id, org.settings)
     org.settings = {**org.settings, "_synthetic": True}
     audit(db, actor(db, member), "sample.loaded", org.id, result)

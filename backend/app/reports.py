@@ -10,6 +10,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from .analytics import analytics, inventory_metrics
+from .core import settings
 from .models import Report
 
 REPORT_TYPES = [
@@ -73,6 +74,9 @@ def create_report(db, org, kind, filters, config):
     )
     db.add(report)
     db.flush()
+    from .capacity import storage_budget
+
+    storage_budget(db)
     return report
 
 
@@ -160,6 +164,12 @@ def pdf_export(report):
     story.append(Table(metrics, colWidths=[220, 160]))
     story.append(Spacer(1, 18))
     if report.rows:
+        display_rows = report.rows[:500] if settings.public_demo else report.rows
+        if len(display_rows) < len(report.rows):
+            story.append(Paragraph(
+                f"Showing the first 500 of {len(report.rows):,} rows. KPI totals cover the full selection. Download XLSX for all report rows.",
+                styles["Normal"],
+            ))
         headers = list(report.rows[0])
         # Full inventory exports stay legible by selecting key columns in PDF.
         headers = [
@@ -182,7 +192,7 @@ def pdf_export(report):
             [[Paragraph(escape(k.replace("_", " ").title()), styles["Normal"]) for k in headers]]
             + [
                 [Paragraph(escape(str(r.get(k, ""))), styles["Normal"]) for k in headers]
-                for r in report.rows
+                for r in display_rows
             ],
             repeatRows=1,
         )

@@ -1,6 +1,6 @@
 # Public registration and Google sign-in
 
-Release preparation, 21 October 2026. The existing retail application is preserved.
+Release verification, 22 October 2026. The existing retail application is preserved.
 This report distinguishes implemented behavior from live provider configuration.
 
 ## Implemented and tested
@@ -23,11 +23,13 @@ PostgreSQL migration and backup/restore checks passed:
 
 ## Live configuration status
 
-The existing owner-only pilot remains active. General signup and Google sign-in are not claimed as live.
+Public registration is active. Both admission checks accept any verified email/Google
+identity, subject to 100 accounts and 100 private workspaces. Google is published to
+external users. Google sign-in and custom email delivery passed real provider checks.
 
-The new API source `b4c56bb` deployed successfully on Render as
-`dep-dbcdciifngtc739rh7b0`; startup logs confirmed the `c8d3` to `d9e4` migration,
-and real HTTPS health returned 200. [Release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39623445007)
+API source `d3e587a` deployed on Render as `dep-dbchi30m7kps73a05mkg`,
+with Google and custom-SMTP capability flags enabled. The additive `c8d3` to `d9e4`
+migration remains intact. [Release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39625863165)
 passed all 86 backend and six browser scenarios, lint, builds, proxy checks and dependency audits.
 The new registration hook was installed in restricted mode and its live grants
 were checked: Auth service SELECT/EXECUTE allowed, anonymous access denied,
@@ -35,20 +37,27 @@ non-admitted identity rejected with 403, and the existing single identity retain
 The managed SQL role does not permit `SET ROLE supabase_auth_admin`; no permissions
 were expanded to bypass that restriction. Service-role execution was tested locally.
 
-At the release check, Cloudflare Pages still served frontend source `ce39869`.
-Its dashboard reported degraded GitHub push delivery, confirmed by the
-[21 October GitHub incident](https://www.githubstatus.com/). No new frontend
-deployment or live CAPTCHA activation is claimed while the source is delayed.
-Two real public browser scenarios then passed against the new API in 3.5 minutes,
-including the entire Excel-to-MIS/analyst flow and mobile navigation. See
-[the measured deployment state](public-oauth-release-verification.json) and
-[CI metadata](public-auth-ci.json). These public checks used the existing frontend
-and do not establish live Google login, SMTP delivery or the new privacy route.
+Cloudflare Pages now serves source `d3e587a`, deployment
+`62fe0aea-b227-42d6-8c71-a7b8a4ad7cef`; the delayed GitHub delivery was resolved
+by retrying the exact source deployment. The live signup, login, callback and privacy
+pages passed accessibility/overflow checks at 1440, 768 and 390 pixels, and anonymous
+onboarding redirects to login. See [live browser evidence](saas-public-browser-verification.json).
+Earlier demo Excel-to-MIS/analyst journeys remain recorded separately in
+[the historical deployment evidence](public-oauth-release-verification.json).
 
-- A dedicated, free Turnstile widget was created for `retailpilot-ai.pages.dev`, with pre-clearance disabled. Its secret is not in this repository. Activation must follow deployment of the CAPTCHA-capable code.
-- Gmail SMTP fields were prepared in the dedicated Supabase Auth project, but not saved without the app password. The account owner must complete Google identity verification and app-password creation. No credential should be pasted into chat or committed.
-- Google Cloud refused a new project because of account quota. The user requested a new RetailPilot project rather than reuse of Flask-Project. No existing OAuth client was modified. A free-project quota request and the exact Flask shutdown dialog were prepared, awaiting their required confirmations. Project deletion still counts against quota for 30 days, so it does not immediately resolve this blocker.
-- SMTP delivery, real Google consent/callback, verified owner onboarding and public-account retail journeys remain pending. Existing demo evidence is separate from these unverified account flows.
+- The dedicated free Turnstile widget is enabled in both the API and Supabase Auth. Automated Chrome initially received error `300030`; the owner completed the normal browser check, producing a real token. The protected recovery request was accepted and its email arrived. No challenge bypass, test key or pre-clearance was used.
+- Gmail custom SMTP is saved in Supabase only. The exposed older app password was revoked, and the owner created its replacement. Actual verification delivery, signup OTP verification and recovery delivery passed. The replacement credential is absent from source and evidence. Final password reset was not performed because it requires the owner to choose a password.
+- Confirmation and recovery templates use the provider's one-time `{{ .Token }}` code, supported by the existing verification pages. Versioned templates: [confirmation](../deployment/email-confirmation.html), [recovery](../deployment/email-recovery.html). This also supports resends after an earlier browser PKCE challenge expires.
+- Google granted the requested non-paid project quota. Dedicated project `retailpilot-ai-512319` and its web client were created; the owner performed the credential-creation click. The client secret was transferred directly to Supabase. Its only scopes are OpenID, email and profile, with no sensitive/restricted scopes. Real owner Google consent, browser-bound callback and access to the existing private workspace passed; the identity count stayed at one.
+- The user-approved Flask-Project shutdown completed, with scheduled deletion on 20 November 2026. Its OAuth client was not reused. No billing or paid service was added.
+- Owner onboarding, fictional seeding and page refresh passed. Production SQL measured **88,973,312 database bytes**, one account, one membership, two organizations including the legacy demo, 97,608 fictional sales and 4,320 inventory snapshots. Dashboard project storage was 99.42 MB; that metric can lag and includes a different scope. This fits even a conservative 500 MB storage budget. Global sample seeding remains bounded to 400,000 sales rows.
+
+[Measured live provider evidence](live-provider-verification.json) distinguishes the real
+checks above from mocked tests. A new non-owner public signup and its private retail
+journey remain untested; the read-only live browser audit verified open admission,
+the Google button, SMTP/CAPTCHA capability flags and all twelve responsive page checks.
+Personal Gmail SMTP has
+limited sending capacity and no delivery SLA; it is appropriate only for a small portfolio demo.
 
 ## Activation sequence
 

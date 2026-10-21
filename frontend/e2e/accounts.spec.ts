@@ -37,6 +37,60 @@ async function register(page:Page,email:string) {
  await expect(page).toHaveURL(/onboarding/);
 }
 
+test("private catalog and authorized business files populate the correct dates and exports",async({page})=>{
+ await register(page,"owner@example.test");
+ await page.getByLabel("Full name",{exact:true}).fill("Fictional Data Owner");
+ await page.getByRole("button",{name:"Save and continue",exact:true}).click();
+ await page.getByLabel("Organization name",{exact:true}).fill("Fictional Own Data Retail");
+ await page.getByRole("button",{name:"Save and continue",exact:true}).click();
+ await page.getByRole("button",{name:"Save and continue",exact:true}).click();
+ await page.getByLabel("Set up my stores and catalog for authorized business files",{exact:true}).check();
+ await page.getByRole("button",{name:"Create private workspace",exact:true}).click();
+ await expect(page).toHaveURL(/app\/organization/);
+ await page.getByLabel("Store code",{exact:true}).fill("OWN01");
+ await page.getByLabel("Store name",{exact:true}).fill("Fictional Own Store");
+ await page.getByRole("button",{name:"Add store",exact:true}).click();
+ await expect(page.getByRole("status")).toContainText("Saved");
+ await page.getByLabel("Catalog CSV or XLSX",{exact:true}).setInputFiles("public/templates/catalog.csv");
+ await expect(page.getByText("1 valid rows · 0 rejected rows",{exact:true})).toBeVisible();
+ await page.getByRole("button",{name:"Save validated catalog",exact:true}).click();
+ await expect(page.getByText(/1 catalog item\(s\) added/)).toBeVisible();
+ for(const width of [1440,768,390]) {
+  await page.setViewportSize({width,height:1000});
+  const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await mkdir("../docs/screenshots/accounts",{recursive:true});
+  await page.screenshot({path:`../docs/screenshots/accounts/private-catalog-${width}.png`,fullPage:true});
+ }
+ await page.setViewportSize({width:1440,height:1000});
+ await page.goto("/app/imports");
+ for(const kind of ["sales","inventory"]) {
+  await page.getByLabel("Dataset type",{exact:true}).selectOption(kind);
+  await page.getByLabel("Upload spreadsheet",{exact:true}).setInputFiles(`public/templates/${kind}.csv`);
+  await expect(page.getByText("1 accepted",{exact:true})).toBeVisible();
+  await page.getByRole("button",{name:"Validate mappings",exact:true}).click();
+  await expect(page.getByText("Mappings validated.",{exact:true})).toBeVisible();
+  await page.getByRole("button",{name:"Import accepted rows",exact:true}).click();
+  await expect(page.getByRole("button",{name:"Import accepted rows",exact:true})).toBeDisabled();
+ }
+ await page.goto("/app/overview");
+ await expect(page.getByLabel("End date",{exact:true})).toHaveValue("2026-10-22");
+ await expect(page.getByText("Organization-scoped business data.",{exact:false})).toBeVisible();
+ const analytics=await page.request.get("/api/v1/analytics");
+ expect(analytics.status()).toBe(200);expect((await analytics.json()).metrics.revenue).toBe(200);
+ await page.reload();
+ await expect(page.getByLabel("End date",{exact:true})).toHaveValue("2026-10-22");
+ const report=await page.request.post("/api/v1/reports",{headers,data:{kind:"Daily sales MIS",filters:{start:"2026-10-22",end:"2026-10-22"}}});
+ expect(report.status()).toBe(200);const reportData=await report.json();
+ expect(reportData.metrics.revenue).toBe(200);
+ const exported=await page.request.get(`/api/v1/reports/${reportData.id}/download?format=xlsx`);
+ expect(exported.status()).toBe(200);
+ const answer=await page.request.post("/api/v1/analyst/query",{headers,data:{question:"What is our current inventory value?"}});
+ expect(answer.status()).toBe(200);expect((await answer.json()).rows[0].value).toBe(400);
+ await writeFile("../docs/private-data-browser-verification.json",JSON.stringify({checked_at:new Date().toISOString(),provider:"isolated mocked identity; not live hosted account",catalog_and_store_setup:true,catalog_axe_widths:[1440,768,390],axe_violations:0,sales_and_inventory_import:true,correct_default_end:"2026-10-22",revenue:200,inventory_value:400,refresh_persistence:true,xlsx_export:true,analyst:true},null,2)+"\n");
+});
+
 test("verified account, resumable onboarding, profile, workspaces, team, role revocation and logout",async({page,browser})=>{
  await register(page,"owner@example.test");
  await page.getByLabel("Full name").fill("Fictional Owner");

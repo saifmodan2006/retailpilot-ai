@@ -99,8 +99,8 @@ class Settings(BaseSettings):
                 raise ValueError("Public email signup requires verified custom SMTP delivery")
             if not self.email_signup_enabled and not self.google_auth_enabled:
                 raise ValueError("Public registration requires an available sign-in method")
-        if self.real_uploads_enabled and self.public_demo:
-            raise ValueError("Real uploads remain disabled on the public portfolio deployment")
+        if self.real_uploads_enabled and not self.accounts_enabled:
+            raise ValueError("Real uploads require configured private accounts")
         if self.public_demo:
             if (
                 not self.demo_enabled

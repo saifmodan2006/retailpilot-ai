@@ -3,7 +3,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field, model_validator
-from sqlalchemy import select, cast, Float
+from sqlalchemy import select, cast, Float, func
 
 from .models import (
     Organization,
@@ -16,6 +16,7 @@ from .models import (
     Sale,
     Store,
     Supplier,
+    Membership,
 )
 from .seed import AS_OF
 
@@ -33,6 +34,17 @@ class Filters(BaseModel):
         if self.start > self.end or (self.end - self.start).days > 1095:
             raise ValueError("Date range must be ordered and at most three years")
         return self
+
+
+def workspace_filters(db, org, days=30):
+    organization = db.get(Organization, org)
+    end = AS_OF
+    if (organization and not organization.is_demo and not organization.settings.get("_synthetic")
+            and db.scalar(select(Membership.id).where(Membership.org_id == org).limit(1))):
+        latest = [db.scalar(select(func.max(model.date)).where(model.org_id == org))
+                  for model in (Sale, Inventory)]
+        end = max((d for d in latest if d), default=date.today())
+    return Filters(start=end - timedelta(days=days - 1), end=end)
 
 
 def catalog(db, org):
@@ -272,6 +284,7 @@ def analytics(db, org, f, config):
         )
     return {
         "metrics": metrics,
+        "currency": config.get("currency", "INR"),
         "trend": trend,
         "stores": stores,
         "categories": categories,

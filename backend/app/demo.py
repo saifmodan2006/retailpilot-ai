@@ -82,7 +82,9 @@ def quota(db, user, model, maximum):
 
 
 def permitted_upload(content, private=False):
-    if not settings.public_demo and (not private or settings.real_uploads_enabled):
+    if private and settings.real_uploads_enabled:
+        return
+    if not settings.public_demo and not private:
         return
     samples = Path(__file__).resolve().parents[2] / "sample_data"
     accepted = {

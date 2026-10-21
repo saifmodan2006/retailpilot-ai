@@ -3,11 +3,10 @@ from datetime import timedelta
 from fastapi import HTTPException
 from sqlalchemy import select
 
-from .analytics import Filters, inventory_metrics
+from .analytics import Filters, inventory_metrics, workspace_filters
 from .core import SessionLocal
 from .models import AuditEvent, Organization, Recommendation, Workflow
 from .reports import create_report
-from .seed import AS_OF
 
 TRANSITIONS = {
     "Pending": {"Running", "Cancelled"},
@@ -62,7 +61,7 @@ def recommendation_values(r):
 
 
 def recommendations(db, org, config):
-    metrics = inventory_metrics(db, org, Filters(), config)
+    metrics = inventory_metrics(db, org, workspace_filters(db, org), config)
     existing = {
         (r.store_id, r.sku_id)
         for r in db.scalars(
@@ -103,9 +102,7 @@ def execute(workflow_id):
             if row.kind == "low-stock":
                 row.result = {"recommendations_created": recommendations(db, org.id, org.settings)}
             elif row.kind in ["daily-report", "weekly-mis"]:
-                f = Filters(
-                    start=AS_OF if row.kind == "daily-report" else AS_OF - timedelta(days=6)
-                )
+                f = workspace_filters(db, org.id, days=1 if row.kind == "daily-report" else 7)
                 report = create_report(
                     db,
                     org.id,
@@ -123,8 +120,8 @@ def execute(workflow_id):
                         org.id,
                         "Weekly store performance",
                         Filters(
-                            start=AS_OF - timedelta(days=13),
-                            end=AS_OF - timedelta(days=7),
+                            start=f.end - timedelta(days=13),
+                            end=f.end - timedelta(days=7),
                         ),
                         org.settings,
                     )

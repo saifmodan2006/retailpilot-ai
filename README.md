@@ -18,18 +18,24 @@ Hosted on Cloudflare Pages Free, Render Free and isolated Neon Free PostgreSQL. 
 
 ## Persistent accounts pilot
 
-Persistent accounts, private organizations and five server-enforced roles are
-implemented as a restricted Supabase Auth pilot. General registration and real
-business uploads remain closed; only the explicitly admitted owner pilot is eligible.
+Persistent accounts, private organizations and five server-enforced roles use
+Supabase Auth. Registration is open to verified email and Google identities,
+subject to the free deployment's 100-account/100-workspace capacity and abuse limits.
 The [account release report](docs/saas-upgrade.md)
-documents migrations, permissions, verification scope and remaining live email
-checks. Provider mocks establish integration behavior, not delivered production emails.
+documents migrations, permissions and verification scope. Custom SMTP has delivered
+real verification and recovery emails, and the verified owner has a fictional private workspace.
 
 Public registration and Google sign-in are implemented behind deployment flags.
-They are not yet enabled on the live pilot: the dedicated Google project is blocked
-by the account's project quota, and custom SMTP still needs an operator-created
-credential. See the [public authentication release notes](docs/public-auth.md)
+Google sign-in has passed a real owner consent/callback test through the dedicated
+free Google project. Public admission is active; private own-data imports are prepared
+behind a separate flag. The shared demo remains fictional and accepts supplied samples only.
+See the [public authentication release notes](docs/public-auth.md)
 for tested behavior, configuration and activation checks.
+
+Private own-data support adds store/SKU setup, catalog-file validation and sales/stock
+imports, with dates and currency taken from the workspace. See [private data setup](docs/private-data.md)
+for activation status, file formats, storage limits and retention. This free portfolio
+deployment is suitable for non-sensitive, non-critical records, not business operations.
 
 ## Business problem
 

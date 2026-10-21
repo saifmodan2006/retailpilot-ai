@@ -450,6 +450,8 @@ export default function App() {
     queryFn: () => api("/catalog"),
     enabled: active && !(privateAccount && accountPage),
   });
+  const defaultStart=cat.data?.default_filters?.start,defaultEnd=cat.data?.default_filters?.end;
+  useEffect(()=>{if(privateAccount&&defaultStart&&defaultEnd)setFilters({start:defaultStart,end:defaultEnd});},[privateAccount,defaultStart,defaultEnd]);
   const data = useQuery({
     queryKey: ["analytics", filters],
     queryFn: () => api("/analytics?" + params(filters)),
@@ -774,7 +776,7 @@ export default function App() {
             >
               <Empty
                 title={privateAccount ? "Your private workspace is ready" : "Meet your demo workspace"}
-                text={privateAccount ? "Start with your workspace settings and store setup. Real uploads are restricted during the pilot. Owners can load fictional data into a completely empty INR workspace." : "12 stores. 180 products. A year of fictional retail operations. Load the data to calculate your first insights."}
+                text={privateAccount ? "Set up your stores and SKU catalog for authorized files when private imports are enabled. Or load fictional samples into a completely empty INR workspace. Keep your own records and fictional samples in separate workspaces." : "12 stores. 180 products. A year of fictional retail operations. Load the data to calculate your first insights."}
                 action={
                   privateAccount ? <div className="account-toolbar"><Link className="btn" to="/app/organization">Workspace setup</Link><Link className="btn" to="/app/workspaces">Your organizations</Link>{["owner","admin"].includes(me.data?.user.role)&&!cat.data?.stores?.length&&<button className="btn primary" disabled={busy} onClick={seedDemo}>Load fictional sample data</button>}</div> :
                   <button
@@ -1007,7 +1009,7 @@ function Overview({ data, filters }: { data: Row; filters: Filters }) {
         >
           <RevenueChart data={data.trend} />
           <div className="chart-footer">
-            <span>NET SALES · INR</span>
+            <span>NET SALES · {data.currency || "INR"}</span>
             <span>
               {filters.start.split("-").reverse().join("/")} –{" "}
               {filters.end.split("-").reverse().join("/")}
@@ -1528,7 +1530,9 @@ function Inventory({ filters, act, busy }: { filters: Filters } & ActionProps) {
 
 function Forecast({ filters }: { filters: Filters }) {
   const [horizon, setHorizon] = useState(30);
-  const f = { ...filters, start: "2025-10-19" };
+  const historyStart=new Date(filters.end+"T00:00:00Z");
+  historyStart.setUTCDate(historyStart.getUTCDate()-364);
+  const f = { ...filters, start: historyStart.toISOString().slice(0,10) };
   const query = useQuery({
     queryKey: ["forecast", f, horizon],
     queryFn: () => api("/forecasts?" + params(f) + "&horizon=" + horizon),
@@ -1643,6 +1647,8 @@ function Forecast({ filters }: { filters: Filters }) {
 }
 
 function Imports({ act, busy }: ActionProps) {
+  const privateAccount = accountMode();
+  const capabilities = useQuery({queryKey:["auth-capabilities"],queryFn:()=>api("/auth/config"),enabled:privateAccount,staleTime:30000});
   const [batch, setBatch] = useState<Row | null>(null);
   const [kind, setKind] = useState("sales");
   const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -1665,7 +1671,7 @@ function Imports({ act, busy }: ActionProps) {
     <>
       <div className="info-banner">
         <ShieldCheck size={18} />
-        <span>Hosted public demos accept only the supplied fictional sample files below. Use a private local instance for your own datasets.</span>
+        <span>{privateAccount&&capabilities.data?.real_uploads?<>Import only business records you are authorized to process. Use an empty private workspace with your own stores and SKU catalog; fictional workspaces accept samples only. Omit customer/contact/payment data and secrets. <Link to="/app/organization">Workspace setup</Link> · <Link to="/privacy/">Privacy and retention</Link></>:"Hosted public demos accept only the supplied fictional sample files below."}</span>
       </div>
       <ol className="import-stepper" aria-label="Import progress">
         {['Upload file', 'Map columns', 'Review validation', 'Import accepted rows'].map((label, index) => (
@@ -1723,7 +1729,7 @@ function Imports({ act, busy }: ActionProps) {
             <span>
               or <em>browse files</em> to get started
             </span>
-            <small>Up to 8 MB · 20,000 rows · multiple XLSX sheets</small>
+            <small>{privateAccount?"Up to 1 MB · 2,000 rows · multiple XLSX sheets":"Up to 8 MB · 20,000 rows · multiple XLSX sheets"}</small>
           </label>
           <div className="import-assurance">
             <ShieldCheck size={16} />
@@ -1733,6 +1739,7 @@ function Imports({ act, busy }: ActionProps) {
           </div>
         </Panel>
         <Panel title="A clean start" sub="Try the included sample files">
+          {privateAccount&&capabilities.data?.real_uploads&&<p>Your data: <a href="/templates/sales.csv" download>sales template</a> · <a href="/templates/inventory.csv" download>inventory template</a>. Replace all example values and dates with your authorized records; store and SKU codes must match your catalog.</p>}
           <div className="template-list">
             <a href={sampleUrl("sales_import.xlsx")} download>
               <span className="mini-icon green">

@@ -1,5 +1,8 @@
 # Persistent accounts release
 
+Historical account architecture report. For the current public registration/provider
+status, see [public authentication](public-auth.md) and [private file support](private-data.md).
+
 ## 1. Authentication architecture
 
 Supabase Auth is the single managed identity provider. It owns password hashing,
