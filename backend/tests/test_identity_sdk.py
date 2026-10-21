@@ -8,6 +8,24 @@ from app.account_auth import SupabaseIdentity
 from app.core import settings, utcnow
 
 
+def test_official_google_sdk_uses_pkce_and_only_identity_scopes(monkeypatch):
+    from urllib.parse import urlsplit, parse_qs
+    from supabase_auth.helpers import generate_pkce_challenge
+
+    monkeypatch.setattr(settings, "supabase_url", "https://fixture.supabase.co")
+    monkeypatch.setattr(settings, "supabase_publishable_key", "test-only-publishable")
+    url, verifier = SupabaseIdentity().google_authorization()
+    parsed = urlsplit(url)
+    query = parse_qs(parsed.query)
+    assert parsed.netloc == "fixture.supabase.co" and parsed.path == "/auth/v1/authorize"
+    assert query["provider"] == ["google"]
+    assert query["code_challenge_method"] == ["s256"]
+    assert query["code_challenge"] == [generate_pkce_challenge(verifier)]
+    assert set(query["scopes"][0].split()) == {"openid", "email", "profile"}
+    assert query["redirect_to"] == [settings.app_origin + "/auth/callback"]
+    assert verifier not in url and "secret" not in query
+
+
 def test_supported_sdk_pkce_exchange_contract(monkeypatch):
     monkeypatch.setattr(settings, "supabase_url", "https://fixture.supabase.co")
     monkeypatch.setattr(settings, "supabase_publishable_key", "test-only-publishable")

@@ -16,6 +16,7 @@ patterns = [
     rb"github_pat_[A-Za-z0-9_]{40,}",
     rb"AKIA[0-9A-Z]{16}",
     rb"sb_secret_[A-Za-z0-9_-]{20,}",
+    rb"GOCSPX-[A-Za-z0-9_-]{20,}",
     rb"postgres(?:ql)?(?:\+psycopg)?://[^\s:@]+:(?!replace-with-|ci-only-)[^\s@${}]{16,}@",
 ]
 local_secrets = []

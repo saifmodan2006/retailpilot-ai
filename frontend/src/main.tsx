@@ -7,6 +7,7 @@ import AuthPage from "./pages/Accounts";
 import {Onboarding} from "./pages/WorkspaceAccounts";
 import {InvitationPage} from "./pages/Team";
 import AuthCallback from "./pages/AuthCallback";
+import Privacy from "./pages/Privacy";
 import "@fontsource-variable/inter";
 import "./style.css";
 import "./premium.css";
@@ -22,7 +23,7 @@ function ProductRoutes() {
     window.addEventListener("rp-session-expired", expired);
     return () => window.removeEventListener("rp-session-expired", expired);
   }, [navigate]);
-  return location.pathname === "/auth/callback" ? <AuthCallback/> : location.pathname === "/auth/invitation" ? <InvitationPage/> : location.pathname.startsWith("/auth/") ? <AuthPage key={location.pathname}/> : location.pathname.replace(/\/$/, "") === "/onboarding" ? <Onboarding/> : <App/>;
+  return location.pathname.replace(/\/$/, "") === "/privacy" ? <Privacy/> : location.pathname === "/auth/callback" ? <AuthCallback/> : location.pathname === "/auth/invitation" ? <InvitationPage/> : location.pathname.startsWith("/auth/") ? <AuthPage key={location.pathname}/> : location.pathname.replace(/\/$/, "") === "/onboarding" ? <Onboarding/> : <App/>;
 }
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

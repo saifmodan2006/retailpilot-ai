@@ -25,6 +25,12 @@ The [account release report](docs/saas-upgrade.md)
 documents migrations, permissions, verification scope and remaining live email
 checks. Provider mocks establish integration behavior, not delivered production emails.
 
+Public registration and Google sign-in are implemented behind deployment flags.
+They are not yet enabled on the live pilot: the dedicated Google project is blocked
+by the account's project quota, and custom SMTP still needs an operator-created
+credential. See the [public authentication release notes](docs/public-auth.md)
+for tested behavior, configuration and activation checks.
+
 ## Business problem
 
 Retail teams often spend hours reconciling disconnected spreadsheets before they can decide which stores need stock and which purchases deserve approval. RetailPilot turns that workflow into a traceable sequence: inspect data quality, calculate shared KPIs, explain reorder quantities, request a manager decision and export the same figures to MIS. The sample company, products and transactions are fictional. No time-saving percentage or commercial impact is claimed without a real study.

@@ -40,6 +40,18 @@ services:
         value: "false"
       - key: REGISTRATION_ENABLED
         value: "false"
+      - key: REGISTRATION_MODE
+        value: "restricted"
+      - key: GOOGLE_AUTH_ENABLED
+        value: "false"
+      - key: EMAIL_SIGNUP_ENABLED
+        value: "true"
+      - key: EMAIL_DELIVERY_CONFIGURED
+        value: "false"
+      - key: CAPTCHA_ENABLED
+        value: "false"
+      - key: CAPTCHA_SITE_KEY
+        sync: false
       - key: REAL_UPLOADS_ENABLED
         value: "false"
       - key: ACCOUNT_COOKIE_SECURE

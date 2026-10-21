@@ -16,6 +16,7 @@ from urllib.parse import quote
 from dotenv import dotenv_values
 
 root = Path(__file__).resolve().parents[1]
+from_accounts = "--from-accounts" in sys.argv
 suffix = secrets.token_hex(4)
 source = "retailpilot_acct_migration_" + suffix
 recovered = "retailpilot_acct_restore_" + suffix
@@ -68,6 +69,16 @@ try:
     INSERT INTO generated_reports (id,org_id,created_at,kind,filters,rows,metrics) VALUES (1,'migration-fixture',now(),'Daily sales MIS','{}','[{"revenue":200}]','{"revenue":200}');
     INSERT INTO audit_events (id,org_id,created_at,actor,action,entity,detail) VALUES (1,'migration-fixture',now(),'Fictional manager','fixture.created','1','{}');
     """)
+    if from_accounts:
+        alembic("upgrade", "c8d3_persistent_accounts")
+        sql("""
+        INSERT INTO accounts (id,provider_id,email,name,job_title,phone,timezone,language,onboarding,created_at,last_login)
+        VALUES ('fixture-account','fixture-provider','fixture@example.test','Fictional member','','','UTC','en','{}',now(),now());
+        INSERT INTO organization_memberships (id,org_id,created_at,account_id,actor_id,role,active)
+        VALUES (1,'migration-fixture',now(),'fixture-account',1,'manager',true);
+        INSERT INTO account_sessions (digest,account_id,org_id,provider_tokens,recovery,created_at,expires_at)
+        VALUES (repeat('a',64),'fixture-account','migration-fixture','fictional-session-ciphertext',false,now(),now()+interval '8 hours');
+        """)
     before = fingerprints(source)
     backup = docker("pg_dump", "-U", "retailpilot", "-d", source, "--format=custom", "--no-owner", "--no-privileges")
     backup_path = Path(tempfile.mkdtemp(prefix="retailpilot-account-recovery-")) / "fictional-baseline.dump"
@@ -77,16 +88,17 @@ try:
     alembic("upgrade", "head")
     after = fingerprints(source)
     assert all(after[table] == result for table, result in before.items()), "Migration changed existing business facts"
-    assert len(after) - len(before) == 6
+    assert len(after) - len(before) == (1 if from_accounts else 7)
     alembic("check")
     result = {"scope": "Disposable local Compose PostgreSQL; NOT a Neon production checkpoint",
               "postgres_version": sql("SHOW server_version"),
-              "migration": "b7c2_public_demo_boundary -> c8d3_persistent_accounts",
+              "migration": ("c8d3_persistent_accounts" if from_accounts else "b7c2_public_demo_boundary") + " -> d9e4_google_oauth",
               "legacy_tables_verified": len(before), "legacy_fingerprints_unchanged": True,
               "backup_restored_and_compared": True, "backup_bytes": len(backup),
               "new_tables": sorted(set(after) - set(before)), "alembic_drift": False,
               "fixtures": "Fictional sales, inventory, actors, approvals, report rows and audit evidence"}
-    (root / "docs" / "saas-migration-verification.json").write_text(json.dumps(result, indent=2) + "\n")
+    output = "oauth-account-preservation.json" if from_accounts else "public-auth-migration-verification.json"
+    (root / "docs" / output).write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
 finally:
     # Only the two fresh, randomized, local test databases created by this process.

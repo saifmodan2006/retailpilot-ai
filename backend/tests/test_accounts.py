@@ -896,3 +896,201 @@ def test_pkce_recovery_expiry_and_server_owned_flow_type(client, identity):
         ).status_code
         == 200
     )
+
+
+def test_open_registration_accepts_verified_non_allowlisted_identity(client, identity, monkeypatch):
+    monkeypatch.setattr(settings, "registration_mode", "open")
+    monkeypatch.setattr(settings, "email_delivery_configured", True)
+    profile = register(client, "public@example.test")
+    assert profile["email"] == "public@example.test"
+    assert client.get("/api/v1/account/profile").status_code == 200
+    monkeypatch.setattr(settings, "registration_enabled", False)
+    # Existing members retain their access after new registration closes.
+    assert client.get("/api/v1/account/profile").status_code == 200
+
+
+def test_public_google_pkce_cookie_binding_replay_and_token_minimization(
+    client, identity, monkeypatch
+):
+    from app.models import OAuthChallenge
+    from app.account_auth import decrypted
+
+    monkeypatch.setattr(settings, "registration_mode", "open")
+    monkeypatch.setattr(settings, "google_auth_enabled", True)
+    monkeypatch.setattr(settings, "supabase_url", "https://fixture.supabase.co")
+    monkeypatch.setattr(settings, "supabase_publishable_key", "test-only-publishable")
+    # Actual official SDK generates the Google URL and PKCE verifier.
+    started = client.post("/api/v1/auth/google", headers=ORIGIN)
+    assert started.status_code == 200
+    assert "code_challenge=" in started.json()["url"]
+    binding = client.cookies.get("rp-auth-challenge")
+    with SessionLocal() as db:
+        row = db.scalar(select(OAuthChallenge))
+        verifier = decrypted(row.verifier)["code_verifier"]
+        assert row.digest != binding and verifier not in started.text
+    original = provider.call
+    google_user = {
+        "id": "verified-google-id",
+        "email": "google-public@example.test",
+        "email_confirmed_at": utcnow().isoformat(),
+    }
+
+    def call(method, path, body=None, access=None):
+        if method == "GET" and path == "user" and access == "app-only-google-access":
+            return google_user
+        return original(method, path, body, access)
+
+    def exchange(code, supplied):
+        assert code == "google-single-use-code" and supplied == verifier
+        return {
+            "access_token": "app-only-google-access",
+            "refresh_token": "app-only-refresh",
+            "expires_in": 3600,
+            "provider_token": "must-never-be-stored",
+            "provider_refresh_token": "also-drop",
+            "user": {"app_metadata": {"provider": "google", "providers": ["google"]}},
+        }
+
+    monkeypatch.setattr(provider, "call", call)
+    monkeypatch.setattr(provider, "exchange", exchange)
+    client.cookies.clear()
+    assert (
+        client.post(
+            "/api/v1/auth/exchange", headers=ORIGIN, json={"code": "google-single-use-code"}
+        ).status_code
+        == 401
+    )
+    client.cookies.set("rp-auth-challenge", binding)
+    verified = client.post(
+        "/api/v1/auth/exchange",
+        headers=ORIGIN,
+        json={"code": "google-single-use-code", "recovery": True},
+    )
+    assert verified.status_code == 200 and not verified.json()["recovery"]
+    assert verified.json()["profile"]["email"] == google_user["email"]
+    with SessionLocal() as db:
+        assert db.scalar(select(OAuthChallenge)) is None
+        tokens = decrypted(db.scalar(select(AccountSession)).provider_tokens)
+        assert "provider_token" not in tokens and "provider_refresh_token" not in tokens
+    client.cookies.set("rp-auth-challenge", binding)
+    assert (
+        client.post(
+            "/api/v1/auth/exchange", headers=ORIGIN, json={"code": "google-single-use-code"}
+        ).status_code
+        == 401
+    )
+
+
+def test_google_disabled_csrf_expiry_and_untrusted_identity(client, identity, monkeypatch):
+    from app.models import OAuthChallenge
+    from datetime import timedelta
+
+    assert client.post("/api/v1/auth/google", headers=ORIGIN).status_code == 503
+    monkeypatch.setattr(settings, "google_auth_enabled", True)
+    monkeypatch.setattr(settings, "supabase_url", "https://fixture.supabase.co")
+    monkeypatch.setattr(settings, "supabase_publishable_key", "test-only-publishable")
+    assert client.post("/api/v1/auth/google").status_code == 403
+    assert client.post("/api/v1/auth/google", headers=ORIGIN).status_code == 200
+    with SessionLocal() as db:
+        db.scalar(select(OAuthChallenge)).expires_at = utcnow() - timedelta(seconds=1)
+        db.commit()
+    assert (
+        client.post(
+            "/api/v1/auth/exchange", headers=ORIGIN, json={"code": "expired-google-code"}
+        ).status_code
+        == 401
+    )
+    assert client.post("/api/v1/auth/google", headers=ORIGIN).status_code == 200
+    monkeypatch.setattr(
+        provider, "exchange", lambda *_: {"user": {"app_metadata": {"provider": "email"}}}
+    )
+    assert (
+        client.post(
+            "/api/v1/auth/exchange", headers=ORIGIN, json={"code": "wrong-provider-code"}
+        ).status_code
+        == 403
+    )
+
+
+def test_public_email_registration_requires_delivery_configuration(client, identity, monkeypatch):
+    monkeypatch.setattr(settings, "registration_mode", "open")
+    monkeypatch.setattr(settings, "email_signup_enabled", False)
+    assert (
+        client.post(
+            "/api/v1/auth/signup",
+            headers=ORIGIN,
+            json={"email": "public@example.test", "password": "fictional-passphrase"},
+        ).status_code
+        == 503
+    )
+    assert (
+        client.post(
+            "/api/v1/auth/recover", headers=ORIGIN, json={"email": "public@example.test"}
+        ).status_code
+        == 503
+    )
+
+
+def test_captcha_required_and_forwarded_only_to_managed_provider(client, identity, monkeypatch):
+    monkeypatch.setattr(settings, "captcha_enabled", True)
+    monkeypatch.setattr(settings, "captcha_site_key", "fictional-public-site-key")
+    original = provider.call
+    observed = []
+
+    def capture(method, path, body=None, access=None):
+        if method == "POST" and (path.startswith("signup") or path.startswith("token")):
+            observed.append(body.get("gotrue_meta_security"))
+        return original(method, path, body, access)
+
+    monkeypatch.setattr(provider, "call", capture)
+    data = {"email": "owner@example.test", "password": "fictional-test-passphrase"}
+    assert client.post("/api/v1/auth/signup", headers=ORIGIN, json=data).status_code == 422
+    data["captcha_token"] = "fictional-single-use-challenge-token"
+    result = client.post("/api/v1/auth/signup", headers=ORIGIN, json=data)
+    assert result.status_code == 200 and data["captcha_token"] not in result.text
+    assert (
+        client.post(
+            "/api/v1/auth/verify",
+            headers=ORIGIN,
+            json={"email": data["email"], "token": "123456", "kind": "signup"},
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/api/v1/auth/login",
+            headers=ORIGIN,
+            json={"email": data["email"], "password": data["password"]},
+        ).status_code
+        == 422
+    )
+    assert client.post("/api/v1/auth/login", headers=ORIGIN, json=data).status_code == 200
+    assert observed == [{"captcha_token": data["captcha_token"]}] * 2
+
+
+def test_public_registration_configuration_fails_closed_without_delivery_and_captcha():
+    from app.core import Settings
+    from pydantic import ValidationError
+
+    values = dict(
+        _env_file=None,
+        accounts_enabled=True,
+        registration_enabled=True,
+        registration_mode="open",
+        supabase_url="https://fixture.supabase.co",
+        supabase_publishable_key="test-only-publishable",
+        session_encryption_key=Fernet.generate_key().decode(),
+        public_demo=True,
+        jwt_secret="test-only-stable-at-least-thirty-two-characters",
+        erp_url="",
+        database_url="postgresql+psycopg://localhost/fixture",
+        app_origin="https://fixture.example.test",
+        cors_origins="https://fixture.example.test",
+    )
+    with pytest.raises(ValidationError):
+        Settings(**values)
+    values.update(
+        email_delivery_configured=True, captcha_enabled=True, captcha_site_key="test-only-site-key"
+    )
+    configured = Settings(**values)
+    assert configured.registration_mode == "open" and not configured.registration_allowlist

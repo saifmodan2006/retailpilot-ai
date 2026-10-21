@@ -4,6 +4,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {ArrowLeft, BarChart3, Eye, EyeOff, Loader2, ShieldCheck} from "lucide-react";
 import {api, type Row} from "../api";
 import "../accounts.css";
+import {AccountCaptcha} from "../AccountCaptcha";
 
 export function AccountFrame({title, subtitle, children}: {title:string;subtitle:string;children:ReactNode}) {
  return <main className="account-layout"><aside className="account-story"><Link to="/" className="brand"><BarChart3/> RetailPilot AI</Link><div><span className="eyebrow">YOUR BUSINESS, CONNECTED</span><h1>A private workspace.<br/>A clearer retail day.</h1><p>Bring your people, reporting and inventory decisions together with access you control.</p><p><ShieldCheck size={18}/> Verified identity. Organization permissions. An auditable workflow.</p></div><small>Existing demo available without an account.</small></aside><section className="account-main"><Link to="/" className="text-link"><ArrowLeft size={15}/> Back to RetailPilot</Link><div className="account-card"><h1>{title}</h1><p>{subtitle}</p>{children}</div></section></main>;
@@ -11,7 +12,7 @@ export function AccountFrame({title, subtitle, children}: {title:string;subtitle
 
 export function PasswordField({name="password", label="Password", minimum=12,login=false}: {name?:string;label?:string;minimum?:number;login?:boolean}) {
  const [visible,setVisible]=useState(false);
- return <label className="account-field">{label}<span className="password-field"><input name={name} type={visible?"text":"password"} minLength={minimum} maxLength={128} autoComplete={name==="current_password"||login?"current-password":"new-password"} required/><button type="button" aria-label={visible?`Hide ${label.toLowerCase()}`:`Show ${label.toLowerCase()}`} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={18}/>:<Eye size={18}/>}</button></span></label>;
+ return <><label className="account-field">{label}<span className="password-field"><input name={name} type={visible?"text":"password"} minLength={minimum} maxLength={128} autoComplete={name==="current_password"||login?"current-password":"new-password"} required/><button type="button" aria-label={visible?`Hide ${label.toLowerCase()}`:`Show ${label.toLowerCase()}`} onClick={()=>setVisible(!visible)}>{visible?<EyeOff size={18}/>:<Eye size={18}/>}</button></span></label>{name==="current_password"&&<AccountCaptcha/>}</>;
 }
 
 export default function AuthPage() {
@@ -38,19 +39,24 @@ export default function AuthPage() {
   } catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
  const unavailable=config&&!config.configured;
+ const emailSignup=config?.email_signup!==false;
+ async function continueGoogle() {setBusy(true);setError("");try{const result=await api("/auth/google",{method:"POST"});const target=new URL(result.url);if(target.protocol!=="https:"||!target.hostname.endsWith(".supabase.co")||target.pathname!=="/auth/v1/authorize")throw new Error("Invalid identity-provider redirect");window.location.assign(target.href);}catch(e){setError((e as Error).message);setBusy(false);}}
  return <AccountFrame title={title} subtitle={subtitle}>
   {error&&<div className="error" role="alert" ref={errorRef} tabIndex={-1}>{error}</div>}{notice&&<div className="toast" role="status">{notice}</div>}
   {unavailable&&<div className="account-notice" role="status"><strong>Private accounts are not open yet.</strong><p>Identity and verified email delivery are awaiting configuration. You can explore the isolated fictional demo today.</p><Link to="/">Try the live demo</Link></div>}
+  {["login","signup"].includes(mode)&&config?.google&&<><button type="button" className="google-signin" disabled={busy} onClick={continueGoogle}><img src="/google-g.png" alt="" width="20" height="20"/>Continue with Google</button><div className="account-divider">or use email</div></>}
+  {mode==="signup"&&!emailSignup&&<p className="account-notice">Email signup is awaiting verified mail delivery. You can create your private workspace with Google.</p>}
   {mode==="session-expired"?<Link className="btn primary" to="/auth/login">Sign in again</Link>:<form onSubmit={submit}>
    {mode!=="reset-password"&&<label className="account-field">Email address<input name="email" type="email" autoComplete="email" maxLength={254} required/></label>}
    {["signup","login","reset-password"].includes(mode)&&<><PasswordField minimum={mode==="login"?1:12} login={mode==="login"}/><small>Use at least 12 characters for a new password.</small></>}
    {["verify","recovery"].includes(mode)&&<label className="account-field">Verification code<input name="token" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" maxLength={10} required/></label>}
-   <button className="btn primary" disabled={busy||!config||Boolean(unavailable)||(mode==="signup"&&!config.registration)}>{busy&&<Loader2 size={17} className="spin"/>}{mode==="login"?"Sign in":mode==="signup"?"Create free account":mode==="forgot-password"?"Send recovery email":mode==="reset-password"?"Save new password":"Verify code"}</button>
-   {mode==="verify"&&<button className="btn" type="button" disabled={busy||Boolean(unavailable)||!config} onClick={async e=>{const email=new FormData(e.currentTarget.form!).get("email");setBusy(true);setError("");try{const result=await api("/auth/resend",{method:"POST",body:JSON.stringify({email})});setNotice(result.message);}catch(err){setError((err as Error).message);}finally{setBusy(false);}}}>Resend verification email</button>}
+   {["login","signup","forgot-password","verify"].includes(mode)&&<AccountCaptcha/>}
+   <button className="btn primary" disabled={busy||!config||Boolean(unavailable)||(mode==="signup"&&(!config.registration||!emailSignup))}>{busy&&<Loader2 size={17} className="spin"/>}{mode==="login"?"Sign in":mode==="signup"?"Create free account":mode==="forgot-password"?"Send recovery email":mode==="reset-password"?"Save new password":"Verify code"}</button>
+   {mode==="verify"&&<button className="btn" type="button" disabled={busy||Boolean(unavailable)||!config} onClick={async e=>{const fields=new FormData(e.currentTarget.form!);const email=fields.get("email"),captcha_token=fields.get("captcha_token")||"";setBusy(true);setError("");try{const result=await api("/auth/resend",{method:"POST",body:JSON.stringify({email,captcha_token})});setNotice(result.message);}catch(err){setError((err as Error).message);}finally{setBusy(false);}}}>Resend verification email</button>}
    {mode==="signup"&&config?.configured&&!config.registration&&<p className="account-notice">Registration is closed during security validation.</p>}
-   {mode==="signup"&&config?.configured&&config.registration&&<p className="account-notice">Registration is limited to explicitly invited pilot participants. General registration is closed.</p>}
+   {mode==="signup"&&config?.configured&&config.registration&&config.registration_mode!=="open"&&<p className="account-notice">Registration is limited to explicitly invited pilot participants. General registration is closed.</p>}
   </form>}
-  <div className="account-links"><Link to="/auth/login">Sign in</Link><Link to="/auth/signup">Create free account</Link><Link to="/auth/forgot-password">Forgot password?</Link><Link to="/auth/recovery">Account recovery</Link></div>
+  <div className="account-links"><Link to="/auth/login">Sign in</Link><Link to="/auth/signup">Create free account</Link><Link to="/auth/forgot-password">Forgot password?</Link><Link to="/auth/recovery">Account recovery</Link><Link to="/privacy/">Privacy</Link></div>
   {mode==="forgot-password"&&<Link className="text-link" to="/auth/recovery">I have a recovery code</Link>}
  </AccountFrame>;
 }

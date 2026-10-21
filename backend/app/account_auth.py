@@ -29,6 +29,14 @@ def aware(value):
     return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
 
 
+def email_admitted(email):
+    return settings.registration_mode == "open" or email.lower() in {
+        value.strip().lower()
+        for value in settings.registration_allowlist.split(",")
+        if value.strip()
+    }
+
+
 def csrf(request: Request):
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         if (
@@ -41,6 +49,33 @@ def csrf(request: Request):
 
 
 class SupabaseIdentity:
+    def google_authorization(self):
+        from supabase_auth import SyncGoTrueClient, SyncMemoryStorage
+
+        storage = SyncMemoryStorage()
+        with httpx.Client(timeout=15, follow_redirects=False) as transport:
+            client = SyncGoTrueClient(
+                url=settings.supabase_url.rstrip("/") + "/auth/v1",
+                headers={"apikey": settings.supabase_publishable_key},
+                http_client=transport,
+                storage=storage,
+                storage_key="rp-google",
+                persist_session=False,
+                auto_refresh_token=False,
+                flow_type="pkce",
+            )
+            result = client.sign_in_with_oauth(
+                {
+                    "provider": "google",
+                    "options": {
+                        "redirect_to": settings.app_origin + "/auth/callback",
+                        "scopes": "openid email profile",
+                        "query_params": {"prompt": "select_account", "access_type": "online"},
+                    },
+                }
+            )
+            return result.url, storage.get_item("rp-google-code-verifier")
+
     def exchange(self, code, verifier):
         from supabase_auth import SyncGoTrueClient
         from supabase_auth.errors import AuthError
@@ -102,6 +137,12 @@ provider = SupabaseIdentity()
 
 
 def encrypted(tokens):
+    # The app never calls Google APIs. Discard provider access/refresh tokens.
+    tokens = {
+        key: value
+        for key, value in tokens.items()
+        if key in {"access_token", "refresh_token", "expires_at", "expires_in", "code_verifier"}
+    }
     tokens = {
         **tokens,
         "expires_at": tokens.get(
@@ -155,16 +196,18 @@ def create_session(db, response, tokens, previous=None, recovery=False, expected
         select(Account).where(Account.provider_id == identity["id"]).with_for_update()
     )
     if not account:
+        if not settings.registration_enabled:
+            raise HTTPException(403, "New account registration is currently closed.")
         # Serialize admission on PostgreSQL, preventing cap races between identities.
         if db.bind.dialect.name == "postgresql":
             from sqlalchemy import text
 
             db.execute(text("SELECT pg_advisory_xact_lock(7319285)"))
         if db.scalar(select(func.count()).select_from(Account)) >= settings.account_max_users:
-            raise HTTPException(429, "The private pilot is at account capacity.")
-        if identity["email"].lower() not in [
-            e.strip().lower() for e in settings.registration_allowlist.split(",") if e.strip()
-        ]:
+            raise HTTPException(
+                429, "This free deployment is at account capacity. Please retry later."
+            )
+        if not email_admitted(identity["email"]):
             raise HTTPException(403, "This account is not admitted to the restricted pilot.")
         account = Account(
             id=str(uuid.uuid4()), provider_id=identity["id"], email=identity["email"].lower()
@@ -251,11 +294,7 @@ def account_session(request: Request, db, allow_recovery=False):
     if identity.get("id") != account.provider_id or not identity.get("email_confirmed_at"):
         raise HTTPException(401, "Identity verification failed.")
     verified_email = identity.get("email", "").lower()
-    if verified_email not in [
-        email.strip().lower()
-        for email in settings.registration_allowlist.split(",")
-        if email.strip()
-    ]:
+    if not email_admitted(verified_email):
         raise HTTPException(403, "This verified email is not admitted to the restricted pilot.")
     if verified_email != account.email:
         account.email = verified_email

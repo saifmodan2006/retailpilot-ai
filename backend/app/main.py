@@ -887,6 +887,8 @@ if web_path.exists():
     def web_app(path: str):
         if path.startswith(("api/", "samples/", "assets/", "product/")):
             raise HTTPException(404, "Not found")
-        if path not in ("", "app", "onboarding") and not path.startswith(("app/", "auth/", "onboarding/")):
+        if path not in ("", "app", "onboarding", "privacy") and not path.startswith(
+            ("app/", "auth/", "onboarding/", "privacy/")
+        ):
             raise HTTPException(404, "Not found")
         return FileResponse(web_path / "index.html")

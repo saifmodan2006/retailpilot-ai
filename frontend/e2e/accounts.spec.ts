@@ -5,6 +5,26 @@ import {mkdir, writeFile} from "node:fs/promises";
 test.skip(process.env.SAAS_E2E !== "1", "Requires the isolated loopback identity mock and disposable database.");
 const passphrase="fictional-test-passphrase";
 const headers={Origin:"http://127.0.0.1:5174","X-RP-CSRF":"1"};
+
+test("Google OAuth redirect, same-browser callback and private onboarding",async({page})=>{
+ await page.route("https://fictional-test.supabase.co/auth/v1/authorize?**",async route=>{
+  const target=new URL(route.request().url());
+  expect(target.searchParams.get("provider")).toBe("google");
+  expect(target.searchParams.get("code_challenge_method")).toBe("s256");
+  expect(target.searchParams.get("scopes")?.split(" ").sort()).toEqual(["email","openid","profile"]);
+  await route.fulfill({status:302,headers:{location:"http://127.0.0.1:5174/auth/callback?code=google-fixture-code"}});
+ });
+ await page.goto("/auth/signup");
+ await page.getByRole("button",{name:"Continue with Google",exact:true}).click();
+ await expect(page.getByRole("heading",{name:"Complete verification",exact:true})).toBeVisible();
+ await expect(page).toHaveURL(/auth\/callback$/);
+ await page.getByRole("button",{name:"Continue verification",exact:true}).click();
+ await expect(page).toHaveURL(/onboarding/);
+ await expect(page.getByLabel("Full name",{exact:true})).toBeVisible();
+ await page.reload();
+ await expect(page.getByLabel("Full name",{exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>Object.keys(localStorage).filter(k=>/supabase|access_token|refresh_token/i.test(k)))).toEqual([]);
+});
 async function register(page:Page,email:string) {
  await page.goto("/auth/signup");
  await page.getByLabel("Email address").fill(email);
@@ -109,6 +129,7 @@ test("password recovery, expired session state and honest unconfigured authentic
  await expect(page).toHaveURL(/auth\/login/);
  await page.getByLabel("Email address").fill("other@example.test");await page.getByLabel("Password",{exact:true}).fill("new-fictional-passphrase");await page.getByRole("button",{name:"Sign in",exact:true}).click();
  await expect(page).toHaveURL(/onboarding/);
+ await expect(page.getByLabel("Full name",{exact:true})).toBeVisible();
  await page.context().clearCookies();await page.goto("/app/profile");
  await expect(page).toHaveURL(/auth\/session-expired/);
  await page.route("**/api/v1/auth/config",route=>route.fulfill({json:{configured:false,registration:false,google:false}}));
@@ -149,7 +170,7 @@ test("default-template PKCE email links, callback, recovery and responsive onboa
   await page.screenshot({path:`../docs/screenshots/accounts/onboarding-${width}.png`,fullPage:true});
   screens.push({route:"onboarding",width,violations:axe.violations.length});
   await page.goto("/auth/callback");
-  await expect(page.getByText(/No pending email-link code/)).toBeVisible();
+  await expect(page.getByText(/No pending authorization code/)).toBeVisible();
   const callback=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze();
   expect(callback.violations).toEqual([]);
   await page.screenshot({path:`../docs/screenshots/accounts/callback-${width}.png`,fullPage:true});

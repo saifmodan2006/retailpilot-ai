@@ -298,3 +298,18 @@ class IdentityChallenge(Base):
     verifier: Mapped[str]
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     __table_args__ = (CheckConstraint("kind IN ('signup','recovery')", name="ck_challenge_kind"),)
+
+
+class OAuthChallenge(Base):
+    __tablename__ = "oauth_challenges"
+    digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    verifier: Mapped[str]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+    @property
+    def kind(self):
+        return "google"
+
+    @property
+    def email(self):
+        return None

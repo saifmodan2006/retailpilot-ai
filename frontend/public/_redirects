@@ -2,3 +2,6 @@
 /auth/* /index.html 200
 /onboarding /onboarding/ 302
 /onboarding/* /index.html 200
+
+/privacy /privacy/ 302
+/privacy/* /index.html 200

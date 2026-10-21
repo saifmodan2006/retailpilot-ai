@@ -1,0 +1,18 @@
+{
+  "scope": "Managed Neon data-and-schema recovery branch queried before OAuth migration",
+  "created_local": "2026-10-21T20:29:37+05:30",
+  "project": "curly-thunder-37563638",
+  "parent_branch": "br-silent-feather-ar0mxeuz",
+  "checkpoint_branch": "br-still-glitter-art68idc",
+  "name": "pre-public-auth-2026-10-21",
+  "expires": "never",
+  "schema_revision": "c8d3_persistent_accounts",
+  "accounts": 0,
+  "memberships": 0,
+  "organizations": 1,
+  "sales_rows": 0,
+  "inventory_rows": 0,
+  "database_bytes": 75415552,
+  "contains": "Fictional portfolio demo data only; expired demo workspace records cleaned up",
+  "production_restore_performed": false
+}

@@ -1,5 +1,6 @@
 import logging
 import secrets
+from typing import Literal
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,13 +30,19 @@ class Settings(BaseSettings):
     accounts_enabled: bool = False
     registration_enabled: bool = False
     registration_allowlist: str = ""
+    registration_mode: Literal["restricted", "open"] = "restricted"
+    google_auth_enabled: bool = False
+    email_signup_enabled: bool = True
+    email_delivery_configured: bool = False
+    captcha_enabled: bool = False
+    captcha_site_key: str = ""
     supabase_url: str = ""
     supabase_publishable_key: str = ""
     session_encryption_key: str = ""
     account_cookie_secure: bool = True
     app_origin: str = "http://localhost:5173"
     account_max_users: int = Field(default=10, ge=1, le=100)
-    account_max_organizations: int = Field(default=4, ge=1, le=10)
+    account_max_organizations: int = Field(default=4, ge=1, le=100)
     real_uploads_enabled: bool = False
 
     @field_validator("database_url")
@@ -72,12 +79,26 @@ class Settings(BaseSettings):
                 not self.account_cookie_secure or not self.app_origin.startswith("https://")
             ):
                 raise ValueError("Public account cookies require HTTPS")
+        if self.google_auth_enabled and not self.accounts_enabled:
+            raise ValueError("Google sign-in requires configured managed accounts")
         if self.registration_enabled and (
-            not self.accounts_enabled or not self.registration_allowlist.strip()
+            not self.accounts_enabled
+            or (self.registration_mode == "restricted" and not self.registration_allowlist.strip())
         ):
             raise ValueError(
                 "Registration requires configured accounts and an explicit pilot email allowlist"
             )
+        if self.registration_enabled and self.registration_mode == "open":
+            if (
+                self.public_demo
+                and self.email_signup_enabled
+                and (not self.captcha_enabled or not self.captcha_site_key)
+            ):
+                raise ValueError("Public email signup requires configured CAPTCHA protection")
+            if self.email_signup_enabled and not self.email_delivery_configured:
+                raise ValueError("Public email signup requires verified custom SMTP delivery")
+            if not self.email_signup_enabled and not self.google_auth_enabled:
+                raise ValueError("Public registration requires an available sign-in method")
         if self.real_uploads_enabled and self.public_demo:
             raise ValueError("Real uploads remain disabled on the public portfolio deployment")
         if self.public_demo:

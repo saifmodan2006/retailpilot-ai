@@ -12,6 +12,24 @@ class FakeIdentity:
     def exchange(self, code, verifier):
         from supabase_auth.helpers import generate_pkce_challenge
 
+        if code == "google-fixture-code":
+            user = self.users.setdefault(
+                "google@example.test",
+                {
+                    "id": "google-browser",
+                    "email": "google@example.test",
+                    "password": "test-only-unused",
+                    "verified": True,
+                },
+            )
+            key = "opaque-google-browser"
+            self.accesses[key] = user
+            return {
+                "access_token": key,
+                "refresh_token": key,
+                "expires_at": utcnow().timestamp() + 300,
+                "user": {"app_metadata": {"provider": "google", "providers": ["google"]}},
+            }
         value = self.links.get(code)
         if not value or generate_pkce_challenge(verifier) != value[1]:
             raise HTTPException(401, "Invalid or already used email link")

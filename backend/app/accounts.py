@@ -17,6 +17,7 @@ from .account_auth import (
     create_session,
     csrf,
     digest,
+    email_admitted,
     live_tokens,
     provider,
 )
@@ -31,6 +32,7 @@ DB = Annotated[Session, Depends(get_db, scope="function")]
 
 class EmailBody(BaseModel):
     email: str = Field(min_length=3, max_length=254)
+    captcha_token: str = Field(default="", max_length=4096)
 
     @field_validator("email")
     @classmethod
@@ -82,9 +84,17 @@ def identity_request(request, bucket="identity", limit=8):
 
 
 def admitted(email):
-    return email in [
-        s.strip().lower() for s in settings.registration_allowlist.split(",") if s.strip()
-    ]
+    return email_admitted(email)
+
+
+def provider_security(body):
+    if settings.captcha_enabled and not body.captcha_token:
+        raise HTTPException(422, "Complete the bot-protection check and try again.")
+    return (
+        {"gotrue_meta_security": {"captcha_token": body.captcha_token}}
+        if body.captcha_token
+        else {}
+    )
 
 
 @router.get("/auth/config")
@@ -92,16 +102,26 @@ def auth_config():
     return {
         "configured": settings.accounts_enabled,
         "registration": settings.accounts_enabled and settings.registration_enabled,
-        "google": False,
+        "google": settings.accounts_enabled and settings.google_auth_enabled,
+        "registration_mode": settings.registration_mode,
+        "email_signup": settings.email_signup_enabled,
+        "captcha": settings.captcha_enabled,
+        "captcha_site_key": settings.captcha_site_key if settings.captcha_enabled else "",
         "real_uploads": settings.real_uploads_enabled,
         "provider": "Supabase Auth",
-        "email_delivery": "provider_configuration_required",
+        "email_delivery": "custom_smtp"
+        if settings.email_delivery_configured
+        else "restricted_provider_default",
     }
 
 
 @router.post("/auth/signup")
 def signup(body: PasswordBody, request: Request, response: Response, db: DB):
     identity_request(request, "signup", 3)
+    if not settings.email_signup_enabled:
+        raise HTTPException(
+            503, "Email signup is awaiting mail delivery configuration. Continue with Google."
+        )
     if not settings.registration_enabled or not admitted(body.email):
         raise HTTPException(
             403, "Registration is restricted to the operator-approved pilot allowlist."
@@ -115,6 +135,7 @@ def signup(body: PasswordBody, request: Request, response: Response, db: DB):
             "password": body.password,
             "code_challenge": challenge,
             "code_challenge_method": "s256",
+            **provider_security(body),
         },
     )
     # Auto-confirm must never silently become an application session.
@@ -131,9 +152,33 @@ def signup(body: PasswordBody, request: Request, response: Response, db: DB):
 @router.post("/auth/login")
 def login(body: PasswordBody, request: Request, response: Response, db: DB):
     identity_request(request, "login", 8)
-    tokens = provider.call("POST", "token?grant_type=password", body.model_dump())
+    tokens = provider.call(
+        "POST",
+        "token?grant_type=password",
+        {"email": body.email, "password": body.password, **provider_security(body)},
+    )
     account = create_session(db, response, tokens, request.cookies.get(COOKIE))
     return {"profile": profile(account)}
+
+
+@router.post("/auth/google")
+def google_signin(request: Request, response: Response, db: DB):
+    identity_request(request, "google-start", 8)
+    if not settings.google_auth_enabled:
+        raise HTTPException(503, "Google sign-in is not configured.")
+    url, verifier = provider.google_authorization()
+    # Only the managed provider URL from the official SDK is returned to the browser.
+    from urllib.parse import urlsplit
+
+    target = urlsplit(url)
+    if (
+        target.scheme != "https"
+        or target.netloc != urlsplit(settings.supabase_url).netloc
+        or target.path != "/auth/v1/authorize"
+    ):
+        raise HTTPException(503, "The identity provider returned an invalid authorization URL.")
+    email_links.begin_google(db, request, response, verifier)
+    return {"url": url}
 
 
 @router.post("/auth/verify")
@@ -154,14 +199,25 @@ def verify(body: VerifyBody, request: Request, response: Response, db: DB):
 @router.post("/auth/recover")
 def recover(body: EmailBody, request: Request, response: Response, db: DB):
     identity_request(request, "recovery", 3)
+    if settings.registration_mode == "open" and not settings.email_delivery_configured:
+        raise HTTPException(
+            503,
+            "Email recovery is not available yet. Continue with Google or contact the operator.",
+        )
     # Identical response for every address; no account enumeration via this endpoint.
+    security = provider_security(body)
     if admitted(body.email):
         challenge = email_links.begin(db, request, response, body.email, "recovery")
         try:
             provider.call(
                 "POST",
                 "recover?redirect_to=" + quote(settings.app_origin + "/auth/callback", safe=""),
-                {"email": body.email, "code_challenge": challenge, "code_challenge_method": "s256"},
+                {
+                    "email": body.email,
+                    "code_challenge": challenge,
+                    "code_challenge_method": "s256",
+                    **security,
+                },
             )
         except HTTPException as exc:
             if exc.status_code >= 500:
@@ -174,14 +230,15 @@ def recover(body: EmailBody, request: Request, response: Response, db: DB):
 @router.post("/auth/resend")
 def resend_verification(body: EmailBody, request: Request):
     identity_request(request, "resend", 3)
+    security = provider_security(body)
     if settings.registration_enabled and admitted(body.email):
         try:
-            provider.call("POST", "resend", {"type": "signup", "email": body.email})
+            provider.call("POST", "resend", {"type": "signup", "email": body.email, **security})
         except HTTPException as exc:
             if exc.status_code >= 500:
                 raise
     return {
-        "message": "If eligible, a fresh verification code will be sent by the identity provider."
+        "message": "If eligible, the identity provider will send a verification email. Open its link on this browser."
     }
 
 
@@ -198,6 +255,13 @@ def exchange_email_link(body: CodeExchangeBody, request: Request, response: Resp
     identity_request(request, "email-link", 6)
     challenge, verifier = email_links.pending(db, request)
     tokens = provider.exchange(body.code, verifier)
+    if challenge.kind == "google":
+        metadata = tokens.get("user", {}).get("app_metadata", {})
+        if not settings.google_auth_enabled or "google" not in [
+            metadata.get("provider"),
+            *metadata.get("providers", []),
+        ]:
+            raise HTTPException(403, "Google identity verification failed. Start sign-in again.")
     account = create_session(
         db,
         response,
@@ -326,6 +390,7 @@ def revoke_others(request: Request, db: DB):
 
 class ChangePasswordBody(ResetBody):
     current_password: str = Field(min_length=1, max_length=128)
+    captcha_token: str = Field(default="", max_length=4096)
 
 
 @router.post("/account/password")
@@ -335,7 +400,7 @@ def change_password(body: ChangePasswordBody, request: Request, response: Respon
     reauth = provider.call(
         "POST",
         "token?grant_type=password",
-        {"email": account.email, "password": body.current_password},
+        {"email": account.email, "password": body.current_password, **provider_security(body)},
     )
     provider.call("PUT", "user", {"password": body.password}, access=reauth["access_token"])
     provider.call("POST", "logout?scope=global", access=reauth["access_token"])

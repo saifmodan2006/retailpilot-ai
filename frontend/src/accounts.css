@@ -3,3 +3,7 @@
 .account-choice{display:flex;align-items:flex-start;gap:10px;line-height:1.7;padding:12px 0;font-size:14px}.account-choice input{margin-top:6px;flex-shrink:0}.account-card fieldset,.account-section fieldset{border:0;padding:0;min-width:0}.account-card legend{font-weight:600;margin-bottom:8px}.account-card small{line-height:1.6;color:#52626b}.account-card .error{overflow-wrap:anywhere}
 
 .account-layout .account-story h1{color:#f4f8f7}.account-scroll:focus-visible{outline:3px solid #076f60;outline-offset:3px}.marketing-nav{gap:12px;flex-wrap:wrap}@media(max-width:700px){.marketing-nav>a:first-child{width:100%}.marketing-nav>.btn{font-size:11px;padding:10px 12px;flex:1;justify-content:center}.marketing-nav{height:auto!important;padding-top:18px;padding-bottom:18px}}
+
+.google-signin{width:100%;min-height:44px;border:1px solid #747775;border-radius:4px;background:#fff;color:#1f1f1f;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 12px;font-size:14px;font-weight:500;cursor:pointer}.google-signin img{flex:none;width:20px;height:20px}.google-signin:hover{background:#f8f9fa}.google-signin:focus-visible{outline:3px solid #196b57;outline-offset:3px}.google-signin:disabled{opacity:.6;cursor:wait}.account-divider{display:flex;align-items:center;gap:12px;color:#526273;font-size:12px;margin:18px 0}.account-divider:before,.account-divider:after{content:"";height:1px;background:#d6dfe5;flex:1}
+
+.account-captcha{margin:12px 0;max-width:100%;min-width:0}.account-captcha>div{max-width:100%}
