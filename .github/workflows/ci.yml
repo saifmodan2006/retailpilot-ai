@@ -54,11 +54,20 @@ jobs:
       - name: Verify managed-account browser lifecycle with isolated identity mock
         run: |
           cd backend
-          RETAILPILOT_SAAS_TEST=1 python tests/serve_accounts.py > /tmp/accounts-backend.log 2>&1 &
           cd ../frontend
           RETAILPILOT_DEV_API=http://127.0.0.1:8002 npm run dev -- --port 5174 --host 127.0.0.1 > /tmp/accounts-frontend.log 2>&1 &
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5174 && curl -fsS http://127.0.0.1:8002/api/v1/health && break || sleep 2; done
-          SAAS_E2E=1 E2E_BASE_URL=http://127.0.0.1:5174 npx playwright test e2e/accounts.spec.ts
+          # Each scenario gets a fresh provider, database and rate-limit window.
+          # Keep production admission/abuse limits intact on fast CI runners.
+          for scenario in 'verified account' 'password recovery' 'default-template PKCE'; do
+            RETAILPILOT_SAAS_TEST=1 python ../backend/tests/serve_accounts.py > /tmp/accounts-backend.log 2>&1 &
+            identity_pid=$!
+            trap 'kill "$identity_pid" 2>/dev/null || true' EXIT
+            for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5174 > /dev/null && curl -fsS http://127.0.0.1:8002/api/v1/health && break || sleep 2; done
+            SAAS_E2E=1 E2E_BASE_URL=http://127.0.0.1:5174 npx playwright test e2e/accounts.spec.ts --grep "$scenario"
+            kill "$identity_pid"
+            wait "$identity_pid" || true
+            trap - EXIT
+          done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

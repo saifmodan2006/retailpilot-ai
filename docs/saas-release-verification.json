@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-21",
+  "local_backend": {"passed": 79, "warnings": 1, "seconds": 56.21, "warning": "Upstream Starlette/httpx TestClient deprecation"},
+  "local_browsers": {"passed": 5, "duration_minutes": 2.5, "identity": "Test-only provider mock; real React, FastAPI and fresh migrated SQLite", "retail_journeys": 2, "account_journeys": 3},
+  "release_container": {"memory_limit_mib": 512, "retail_browser_tests_passed": 2, "duration_minutes": 1.3, "observed_after_journey_mib": 194, "oom_killed": false, "accounts_enabled": false, "scope": "Retail regression; not an account load benchmark"},
+  "public_browsers": {"frontend": "https://retailpilot-ai.pages.dev", "api": "https://retailpilot-ai-api.onrender.com", "passed": 2, "duration_minutes": 4.0, "journeys": ["Excel upload, validation, import, revenue reconciliation, reorder, manager approval, XLSX MIS download, analyst, forecasting and audit", "Mobile navigation and empty isolated demo"], "disposable_sessions_ended": true},
+  "migration": {"production_revision": "c8d3_persistent_accounts", "new_tables": 6, "persistent_accounts": 0, "memberships": 0, "database_bytes_at_query": 75382784, "verified_via": "Read-only Neon production SQL", "checkpoint": "br-fancy-morning-ar08xyj9"},
+  "dependencies": {"runtime_packages": 47, "known_vulnerabilities_after_patch": 0, "patched": "certifi 2026.10.18 -> 2026.10.19 after PYSEC-2026-4320 CI finding", "detail": "dependency-audit.json"},
+  "checks_passed": ["Ruff", "ESLint", "TypeScript", "Vite production build", "Docker backend/frontend/release builds", "Fixed-origin cookie proxy", "Staged secret scan: 260 files, 284 payloads"],
+  "restrictions": {"registration": false, "real_uploads": false, "google": false, "invitation_email_delivery": false},
+  "live_owner_lifecycle": "Pending owner-entered password and delivered-email verification. Mocks do not prove live delivery.",
+  "final_pages_refresh_and_ci": "Validation in progress; see release report for final results."
+}

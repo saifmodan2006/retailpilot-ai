@@ -130,16 +130,24 @@ Production app.main has no mock identity route or test bypass.
 
 The original backend suite remains included. Original browser journeys exercise
 upload, validation, commit, reorder, manager approval, MIS, analyst, forecasting,
-audit and mobile navigation. Account/auth screens are tested at1440,768 and390px.
+audit and mobile navigation. Account/auth screens are tested at 1440, 768 and 390px.
 Evidence: [workspace accessibility](saas-browser-accessibility.json),
 [PKCE responsiveness](saas-pkce-browser-verification.json), screenshots and CI.
 All fixtures are fictional. Provider mocks never imply live mail delivery.
 Build, TypeScript and lint checks are required. Upstream warnings are not hidden.
 
+Executed on 21 October: 79 backend tests, five isolated browser journeys, two
+additional browser tests inside a 512MiB release container and two public browser
+journeys passed. The public Excel-to-MIS journey completed in 3.9 minutes. All 22
+[public HTTP checks](saas-public-http-verification.json) passed, including canonical
+onboarding refreshes. The runtime dependency audit covers 47 packages with zero
+known advisories after patching certifi. [Release evidence](saas-release-verification.json)
+distinguishes these results from pending live-owner email tests.
+
 ## 10. Deployment status and configuration
 
-Status on21 October2026: implementation tested locally; release validation in
-progress. Registration remains closed. Public links:
+Status on 21 October 2026: account API and frontend deployed. Live owner email
+validation remains pending; registration stays closed. Public links:
 [frontend](https://retailpilot-ai.pages.dev/),
 [API health](https://retailpilot-ai-api.onrender.com/api/v1/health),
 [GitHub](https://github.com/saifmodan2006/retailpilot-ai).
@@ -174,7 +182,7 @@ and public-demo limits remain required. Account variables:
 
 Run pytest, Ruff, frontend lint/build and `node scripts/check-api-proxy.mjs`.
 The CI workflow documents the isolated test harness: `RETAILPILOT_SAAS_TEST=1`
-runs `backend/tests/serve_accounts.py` on loopback8002; Vite5174 uses
+runs `backend/tests/serve_accounts.py` on loopback 8002; Vite 5174 uses
 `RETAILPILOT_DEV_API=http://127.0.0.1:8002`; Playwright uses `SAAS_E2E=1` and
 `E2E_BASE_URL=http://127.0.0.1:5174`. It uses fresh temporary data and test-only
 provider responses. Ordinary Compose keeps accounts off. Real local Auth needs
@@ -186,15 +194,15 @@ insecure cookies. Never reuse production secrets for local testing.
 No paid plan, billing method, worker or AI provider was added. Render sleeps and
 can cold-start slowly. Bounded in-process tasks keep durable workflow state in
 PostgreSQL. One worker, BLAS/OMP limits and row/upload/report/admission caps bound
-resources. Earlier MVP measurements peaked around248MiB inside512MiB; this is not
+resources. Earlier MVP measurements peaked around 248MiB inside 512MiB; this is not
 an account load benchmark or reliability guarantee. The checkpoint logical size
-was about97MiB, below the1GiB Neon free allowance; ongoing growth needs monitoring.
+was about 97MiB, below the 1GiB Neon free allowance; ongoing growth needs monitoring.
 Supabase default mail is unsuitable for open registration; free projects can
 pause. Pages Functions has a daily free allowance.
 
-Sessions expire after8h, maximum5/account. PKCE challenges expire after30min,
-invitations after24h, demos after2h. Raw previews expire after7days, generated
-exports after30days; cleanup runs on workspace access, not a paid scheduler.
+Sessions expire after 8h, maximum 5/account. PKCE challenges expire after 30min,
+invitations after 24h, demos after 2h. Raw previews expire after 7days, generated
+exports after 30days; cleanup runs on workspace access, not a paid scheduler.
 Core retail records remain, with growth caps. Audit/auth logs are bounded.
 Physical erasure and business retention require operator review.
 
