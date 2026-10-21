@@ -33,7 +33,7 @@ export default function AuthPage() {
    else {
     const r=await api(mode==="login"?"/auth/login":"/auth/verify",{method:"POST",body:JSON.stringify({...values,...(mode!=="login"?{kind:mode==="recovery"?"recovery":"signup"}:{})})});
     localStorage.removeItem("rp-token");sessionStorage.setItem("rp-account-active","true");qc.clear();
-    navigate(r.recovery?"/auth/reset-password":r.profile.onboarding?.completed?"/app/overview":"/onboarding");
+    navigate(r.recovery?"/auth/reset-password":r.profile.onboarding?.completed?"/app/overview":"/onboarding/");
    }
   } catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }

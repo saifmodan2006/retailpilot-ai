@@ -142,7 +142,7 @@ test("default-template PKCE email links, callback, recovery and responsive onboa
  const screens=[];
  for(const width of [1440,768,390]) {
   await page.setViewportSize({width,height:900});
-  await page.goto("/onboarding");await expect(page.getByLabel("Full name")).toBeVisible();
+  await page.goto("/onboarding/");await expect(page.getByLabel("Full name")).toBeVisible();
   const axe=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21aa"]).analyze();
   expect(axe.violations).toEqual([]);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

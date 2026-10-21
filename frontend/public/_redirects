@@ -1,3 +1,4 @@
 /app/* /index.html 200
 /auth/* /index.html 200
-/onboarding* /index.html 200
+/onboarding /onboarding/ 302
+/onboarding/* /index.html 200

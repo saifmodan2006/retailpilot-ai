@@ -22,7 +22,7 @@ function ProductRoutes() {
     window.addEventListener("rp-session-expired", expired);
     return () => window.removeEventListener("rp-session-expired", expired);
   }, [navigate]);
-  return location.pathname === "/auth/callback" ? <AuthCallback/> : location.pathname === "/auth/invitation" ? <InvitationPage/> : location.pathname.startsWith("/auth/") ? <AuthPage key={location.pathname}/> : location.pathname === "/onboarding" ? <Onboarding/> : <App/>;
+  return location.pathname === "/auth/callback" ? <AuthCallback/> : location.pathname === "/auth/invitation" ? <InvitationPage/> : location.pathname.startsWith("/auth/") ? <AuthPage key={location.pathname}/> : location.pathname.replace(/\/$/, "") === "/onboarding" ? <Onboarding/> : <App/>;
 }
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
