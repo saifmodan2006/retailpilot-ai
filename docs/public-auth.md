@@ -25,6 +25,26 @@ PostgreSQL migration and backup/restore checks passed:
 
 The existing owner-only pilot remains active. General signup and Google sign-in are not claimed as live.
 
+The new API source `b4c56bb` deployed successfully on Render as
+`dep-dbcdciifngtc739rh7b0`; startup logs confirmed the `c8d3` to `d9e4` migration,
+and real HTTPS health returned 200. [Release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39623445007)
+passed all 86 backend and six browser scenarios, lint, builds, proxy checks and dependency audits.
+The new registration hook was installed in restricted mode and its live grants
+were checked: Auth service SELECT/EXECUTE allowed, anonymous access denied,
+non-admitted identity rejected with 403, and the existing single identity retained.
+The managed SQL role does not permit `SET ROLE supabase_auth_admin`; no permissions
+were expanded to bypass that restriction. Service-role execution was tested locally.
+
+At the release check, Cloudflare Pages still served frontend source `ce39869`.
+Its dashboard reported degraded GitHub push delivery, confirmed by the
+[21 October GitHub incident](https://www.githubstatus.com/). No new frontend
+deployment or live CAPTCHA activation is claimed while the source is delayed.
+Two real public browser scenarios then passed against the new API in 3.5 minutes,
+including the entire Excel-to-MIS/analyst flow and mobile navigation. See
+[the measured deployment state](public-oauth-release-verification.json) and
+[CI metadata](public-auth-ci.json). These public checks used the existing frontend
+and do not establish live Google login, SMTP delivery or the new privacy route.
+
 - A dedicated, free Turnstile widget was created for `retailpilot-ai.pages.dev`, with pre-clearance disabled. Its secret is not in this repository. Activation must follow deployment of the CAPTCHA-capable code.
 - Gmail SMTP fields were prepared in the dedicated Supabase Auth project, but not saved without the app password. The account owner must complete Google identity verification and app-password creation. No credential should be pasted into chat or committed.
 - Google Cloud refused a new project because of account quota. The user requested a new RetailPilot project rather than reuse of Flask-Project. No existing OAuth client was modified. A free-project quota request and the exact Flask shutdown dialog were prepared, awaiting their required confirmations. Project deletion still counts against quota for 30 days, so it does not immediately resolve this blocker.

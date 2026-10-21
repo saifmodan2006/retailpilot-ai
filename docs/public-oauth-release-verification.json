@@ -1,0 +1,45 @@
+{
+  "checked_local_date": "2026-10-21",
+  "api": "https://retailpilot-ai-api.onrender.com",
+  "frontend": "https://retailpilot-ai.pages.dev",
+  "backend_source": "b4c56bb",
+  "backend_deployment": "dep-dbcdciifngtc739rh7b0",
+  "backend_health_status": 200,
+  "production_migration": "c8d3_persistent_accounts -> d9e4_google_oauth",
+  "frontend_source": "ce39869",
+  "frontend_deployment": "0a142e1f-7990-4bab-b711-ba63467cfe81",
+  "frontend_release_pending": true,
+  "frontend_blocker": "Cloudflare dashboard reports degraded GitHub push delivery; new source absent from deployment list",
+  "auth_config_http_status": 200,
+  "auth_config_cache_control": "no-store",
+  "capabilities": {
+    "configured": true,
+    "registration": true,
+    "registration_mode": "restricted",
+    "google": false,
+    "captcha": false,
+    "email_signup": true,
+    "email_delivery": "restricted_provider_default",
+    "real_uploads": false
+  },
+  "public_browser_scenarios": {
+    "passed": 2,
+    "duration": "3.5 minutes",
+    "scope": "Existing public frontend with new API: full Excel-to-MIS/analyst journey and mobile navigation",
+    "managed_account_login_tested": false
+  },
+  "live_auth_hook": {
+    "mode": "restricted",
+    "max_users": 100,
+    "email_signup": false,
+    "identity_users": 1,
+    "non_admitted_status": 403,
+    "auth_service_select_and_execute_granted": true,
+    "anonymous_select_and_execute_granted": false,
+    "set_auth_role_from_managed_sql": "Denied; no permission escalation attempted. Role execution tested in disposable local PostgreSQL."
+  },
+  "google_live_verified": false,
+  "smtp_delivery_verified": false,
+  "public_registration_activated": false,
+  "paid_resources_created": false
+}
