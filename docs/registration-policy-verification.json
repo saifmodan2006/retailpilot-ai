@@ -1,0 +1,11 @@
+{
+  "scope": "Disposable local PostgreSQL, actual policy SQL under Auth service role",
+  "restricted_allowlist": true,
+  "google_only": true,
+  "open_verified_email_admission": true,
+  "blank_email_denied": true,
+  "capacity_enforced": true,
+  "closed_denied": true,
+  "anonymous_table_and_function_denied": true,
+  "production_policy_changed": false
+}

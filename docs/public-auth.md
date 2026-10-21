@@ -18,6 +18,7 @@ PostgreSQL migration and backup/restore checks passed:
 
 - [Retail schema preservation](public-auth-migration-verification.json)
 - [Existing account/session preservation](oauth-account-preservation.json): all 27 existing tables retained matching fingerprints; only `oauth_challenges` was added, with no Alembic drift.
+- [Registration hook checks](registration-policy-verification.json): the actual policy SQL passed restricted/open/Google-only/closed, capacity and anonymous-denial checks under the Auth service role in disposable PostgreSQL. Run with `python scripts/check-registration-policy.py` against the local Compose DB; fixtures and roles roll back.
 - [Managed Neon checkpoint](neon-public-auth-checkpoint.json) was queried before the production OAuth migration. No production restore was performed.
 
 ## Live configuration status
