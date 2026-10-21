@@ -12,6 +12,8 @@
   "public_http_checks": 22,
   "public_account_browser_captures": 9,
   "public_account_axe_violations": 0,
-  "frontend_deployment": "a6fad5f9-9ab8-4c67-9020-e7a8235fd171 at c814c5b",
-  "ci": {"source": "93c0c5f", "conclusion": "success", "url": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39532352566"}
+  "frontend_deployment": "0a142e1f-7990-4bab-b711-ba63467cfe81 at ce39869",
+  "backend_deployment": "dep-dbc25cfavr4c73ejb8u0 at aa38ccc",
+  "python_runtime": "3.12.15 verified in Render deployment log",
+  "ci": {"source": "ce39869", "conclusion": "success", "url": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39532917552"}
 }

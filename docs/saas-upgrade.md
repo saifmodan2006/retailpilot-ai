@@ -145,8 +145,8 @@ journeys passed. The public Excel-to-MIS journey completed in 3.9 minutes. All 2
 onboarding refreshes. The runtime dependency audit covers 47 packages with zero
 known advisories after patching certifi. [Release evidence](saas-release-verification.json)
 distinguishes these results from pending live-owner email tests.
-The [release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39532352566)
-passed on `93c0c5f`, including each account scenario on its own isolated server.
+The [release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39532917552)
+passed on `ce39869`, including each account scenario on its own isolated server.
 Earlier CI exposed a shared-test signup rate limit; test isolation was fixed
 without weakening production abuse limits. Nine additional live account-page
 captures passed targeted Axe checks: [public browser evidence](saas-public-browser-verification.json).
