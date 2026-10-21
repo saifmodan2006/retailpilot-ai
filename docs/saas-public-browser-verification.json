@@ -1,0 +1,61 @@
+{
+  "origin": "https://retailpilot-ai.pages.dev",
+  "checked_at": "2026-10-21T02:21:18.263Z",
+  "pages": [
+    {
+      "route": "signup",
+      "width": 1440,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "login",
+      "width": 1440,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "callback",
+      "width": 1440,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "signup",
+      "width": 768,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "login",
+      "width": 768,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "callback",
+      "width": 768,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "signup",
+      "width": 390,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "login",
+      "width": 390,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "route": "callback",
+      "width": 390,
+      "axe_violations": 0,
+      "horizontal_overflow": false
+    }
+  ],
+  "anonymous_onboarding_redirect": "/auth/login"
+}
