@@ -1,0 +1,35 @@
+{
+  "provider": "mocked provider; real application and SDK contract separately tested",
+  "screens": [
+    {
+      "route": "onboarding",
+      "width": 1440,
+      "violations": 0
+    },
+    {
+      "route": "callback",
+      "width": 1440,
+      "violations": 0
+    },
+    {
+      "route": "onboarding",
+      "width": 768,
+      "violations": 0
+    },
+    {
+      "route": "callback",
+      "width": 768,
+      "violations": 0
+    },
+    {
+      "route": "onboarding",
+      "width": 390,
+      "violations": 0
+    },
+    {
+      "route": "callback",
+      "width": 390,
+      "violations": 0
+    }
+  ]
+}

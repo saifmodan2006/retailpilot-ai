@@ -48,3 +48,12 @@ typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.5
 uvicorn==0.41.0
+
+cryptography==50.0.2
+cffi==2.1.1
+pycparser==3.11
+
+supabase-auth==2.33.0
+h2==4.4.1
+hpack==4.2.0
+hyperframe==6.1.0

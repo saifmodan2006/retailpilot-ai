@@ -15,6 +15,7 @@ patterns = [
     rb"gh[pousr]_[A-Za-z0-9]{30,}",
     rb"github_pat_[A-Za-z0-9_]{40,}",
     rb"AKIA[0-9A-Z]{16}",
+    rb"sb_secret_[A-Za-z0-9_-]{20,}",
     rb"postgres(?:ql)?(?:\+psycopg)?://[^\s:@]+:(?!replace-with-|ci-only-)[^\s@${}]{16,}@",
 ]
 local_secrets = []
@@ -22,7 +23,7 @@ env = root / ".env"
 if env.exists():
     for line in env.read_text().splitlines():
         key, _, value = line.partition("=")
-        if key in {"JWT_SECRET", "POSTGRES_PASSWORD", "LLM_API_KEY"} and len(value) >= 20:
+        if key in {"JWT_SECRET", "POSTGRES_PASSWORD", "LLM_API_KEY", "SESSION_ENCRYPTION_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"} and len(value) >= 20:
             local_secrets.append(value.encode())
 issues = []
 scanned = 0

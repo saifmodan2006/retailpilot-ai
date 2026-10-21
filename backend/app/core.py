@@ -26,6 +26,17 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
     llm_enabled: bool = False
+    accounts_enabled: bool = False
+    registration_enabled: bool = False
+    registration_allowlist: str = ""
+    supabase_url: str = ""
+    supabase_publishable_key: str = ""
+    session_encryption_key: str = ""
+    account_cookie_secure: bool = True
+    app_origin: str = "http://localhost:5173"
+    account_max_users: int = Field(default=10, ge=1, le=100)
+    account_max_organizations: int = Field(default=4, ge=1, le=10)
+    real_uploads_enabled: bool = False
 
     @field_validator("database_url")
     @classmethod
@@ -37,6 +48,38 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def public_boundary(self):
+        if self.accounts_enabled:
+            from cryptography.fernet import Fernet
+            from urllib.parse import urlsplit
+
+            host = urlsplit(self.supabase_url)
+            if (
+                host.scheme != "https"
+                or not host.netloc.endswith(".supabase.co")
+                or host.path not in ("", "/")
+                or host.username
+                or host.password
+                or host.query
+                or host.fragment
+            ):
+                raise ValueError("Accounts require an HTTPS Supabase project URL")
+            if not self.supabase_publishable_key:
+                raise ValueError("Accounts require a Supabase publishable key")
+            Fernet(self.session_encryption_key.encode())
+            if self.app_origin not in self.cors_origins.split(","):
+                raise ValueError("Account origin must be an explicit CORS origin")
+            if self.public_demo and (
+                not self.account_cookie_secure or not self.app_origin.startswith("https://")
+            ):
+                raise ValueError("Public account cookies require HTTPS")
+        if self.registration_enabled and (
+            not self.accounts_enabled or not self.registration_allowlist.strip()
+        ):
+            raise ValueError(
+                "Registration requires configured accounts and an explicit pilot email allowlist"
+            )
+        if self.real_uploads_enabled and self.public_demo:
+            raise ValueError("Real uploads remain disabled on the public portfolio deployment")
         if self.public_demo:
             if (
                 not self.demo_enabled

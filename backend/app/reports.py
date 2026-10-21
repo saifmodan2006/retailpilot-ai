@@ -63,7 +63,11 @@ def create_report(db, org, kind, filters, config):
     report = Report(
         org_id=org,
         kind=kind,
-        filters=filters.model_dump(mode="json"),
+        filters={
+            **filters.model_dump(mode="json"),
+            "currency": config.get("currency", "INR"),
+            "data_label": data["data_label"],
+        },
         rows=rows,
         metrics=data["metrics"],
     )
@@ -113,7 +117,12 @@ def xlsx_export(title, rows, metrics=None, filters=None):
             ws.cell(len(rows) + 2, i).font = Font(bold=True)
     summary = wb.create_sheet("Summary")
     summary.append(["RetailPilot AI", safe_cell(title)])
-    summary.append(["Dataset", "Fictional synthetic demonstration"])
+    summary.append(
+        [
+            "Dataset",
+            safe_cell((filters or {}).get("data_label", "Fictional synthetic demonstration")),
+        ]
+    )
     for key, value in (filters or {}).items():
         summary.append([key, safe_cell(str(value))])
     for key, value in (metrics or {}).items():
@@ -132,7 +141,11 @@ def pdf_export(report):
     story = [
         Paragraph("RetailPilot AI | " + escape(report.kind), styles["Title"]),
         Paragraph(
-            "Synthetic demonstration data. Currency: INR. " + escape(str(report.filters)),
+            escape(report.filters.get("data_label", "Synthetic demonstration data"))
+            + ". Currency: "
+            + escape(report.filters.get("currency", "INR"))
+            + ". "
+            + escape(str(report.filters)),
             styles["Normal"],
         ),
         Spacer(1, 14),

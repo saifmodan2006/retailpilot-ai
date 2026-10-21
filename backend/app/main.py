@@ -84,10 +84,19 @@ app.add_middleware(
     allow_origins=settings.cors_origins.split(","),
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-RP-CSRF"],
 )
 app.add_middleware(BodyLimitMiddleware)
 app.add_middleware(DemoResourceMiddleware)
+from .accounts import router as accounts_router  # noqa: E402
+
+app.include_router(accounts_router)
+from .organizations import router as organizations_router  # noqa: E402
+
+app.include_router(organizations_router)
+from .team import router as team_router  # noqa: E402
+
+app.include_router(team_router)
 DB = Annotated[Session, Depends(get_db, scope="function")]
 Actor = Annotated[User, Depends(current_user)]
 Manager = Annotated[User, Depends(manager)]
@@ -181,10 +190,15 @@ def demo_session(request: Request, db: DB):
 
 @app.get("/api/v1/me")
 def me(user: Actor, db: DB):
+    org = db.get(Organization, user.org_id)
     return {
         "user": serialize(user),
-        "organization": db.get(Organization, user.org_id).name,
-        "demo": settings.demo_enabled,
+        "organization": org.name,
+        "organization_id": org.id,
+        "currency": org.settings.get("currency", "INR"),
+        "timezone": org.settings.get("timezone", "Asia/Kolkata"),
+        "is_demo": org.is_demo,
+        "demo": settings.demo_enabled and org.is_demo,
         "public_demo": settings.public_demo,
     }
 
@@ -286,9 +300,14 @@ async def preview_upload(
     kind: Literal["sales", "inventory"] = "sales",
 ):
     content = await file.read(8 * 1024 * 1024 + 1)
-    permitted_upload(content)
+    from .models import Membership
+
+    private = bool(db.scalar(select(Membership.id).where(Membership.actor_id == user.id)))
+    permitted_upload(content, private=private)
     quota(db, user, ImportBatch, 12)
     batch = imports.preview(db, user.org_id, content, file.filename or "", kind)
+    if private and len(batch.payload) > 2000:
+        raise HTTPException(413, "Private pilot imports support at most 2,000 rows per file.")
     audit(
         db,
         user,
@@ -306,6 +325,10 @@ class MappingBody(BaseModel):
 @app.post("/api/v1/imports/{ident}/validate")
 def validate_mapping(ident: int, body: MappingBody, user: Actor, db: DB):
     batch = owned(db, ImportBatch, ident, user.org_id)
+    if batch.status == "Expired":
+        raise HTTPException(
+            410, "The preview expired under the seven-day retention policy. Upload a fresh file."
+        )
     allowed = imports.SALES_FIELDS if batch.kind == "sales" else imports.INVENTORY_FIELDS
     if (
         len(body.mapping) > 50
@@ -321,6 +344,22 @@ def validate_mapping(ident: int, body: MappingBody, user: Actor, db: DB):
 @app.post("/api/v1/imports/{ident}/commit")
 def commit(ident: int, user: Actor, db: DB, background: BackgroundTasks):
     batch = owned(db, ImportBatch, ident, user.org_id, lock=True)
+    if batch.status == "Expired":
+        raise HTTPException(410, "The preview expired. Upload a fresh file.")
+    from .models import Membership, Sale, Inventory
+    from sqlalchemy import func
+
+    if (
+        db.scalar(select(Membership.id).where(Membership.actor_id == user.id))
+        and batch.status != "Imported"
+    ):
+        db.scalar(select(Organization).where(Organization.id == user.org_id).with_for_update())
+        model, maximum = (Sale, 100000) if batch.kind == "sales" else (Inventory, 10000)
+        count = db.scalar(
+            select(func.count()).select_from(model).where(model.org_id == user.org_id)
+        )
+        if count + batch.accepted > maximum:
+            raise HTTPException(429, "Workspace row quota reached. No data was imported.")
     changed = imports.commit_import(db, batch)
     if changed:
         audit(
@@ -509,6 +548,8 @@ def get_forecast(user: Actor, db: DB, filters: Annotated[ForecastFilters, Query(
     if filters.horizon not in [7, 30]:
         raise HTTPException(422, "Forecast horizon must be 7 or 30 days")
     result = forecast(db, user.org_id, filters, filters.horizon)
+    if user.role == "viewer":
+        return result
     previous = db.scalar(
         select(ForecastResult)
         .where(ForecastResult.org_id == user.org_id)
@@ -577,6 +618,16 @@ def download(content, filename):
 @app.get("/api/v1/reports/{ident}/download")
 def get_report_file(ident: int, user: Actor, db: DB, format: Literal["xlsx", "pdf"] = "xlsx"):
     report = owned(db, Report, ident, user.org_id)
+    from .account_auth import aware
+    from datetime import timedelta
+
+    if not db.get(Organization, user.org_id).is_demo and aware(
+        report.created_at
+    ) < utcnow() - timedelta(days=30):
+        raise HTTPException(
+            410,
+            "The generated artifact expired under the thirty-day retention policy. Generate a new report.",
+        )
     audit(db, user, "report.downloaded", ident, {"format": format})
     return download(
         pdf_export(report)
@@ -623,6 +674,15 @@ class WorkflowBody(BaseModel):
 
 @app.post("/api/v1/workflows")
 def run_workflow(body: WorkflowBody, user: Actor, db: DB, background: BackgroundTasks):
+    if (
+        body.kind == "low-stock"
+        and user.role == "analyst"
+        and not db.get(Organization, user.org_id).is_demo
+    ):
+        from .models import Membership
+
+        if db.scalar(select(Membership.id).where(Membership.actor_id == user.id)):
+            raise HTTPException(403, "Inventory automation requires a manager, admin or owner.")
     existing = db.scalar(
         select(Workflow).where(Workflow.org_id == user.org_id, Workflow.key == body.key)
     )
@@ -641,6 +701,15 @@ def run_workflow(body: WorkflowBody, user: Actor, db: DB, background: Background
 @app.post("/api/v1/workflows/{ident}/retry")
 def retry_workflow(ident: int, user: Actor, db: DB, background: BackgroundTasks):
     row = owned(db, Workflow, ident, user.org_id, lock=True)
+    if (
+        row.kind == "low-stock"
+        and user.role == "analyst"
+        and not db.get(Organization, user.org_id).is_demo
+    ):
+        from .models import Membership
+
+        if db.scalar(select(Membership.id).where(Membership.actor_id == user.id)):
+            raise HTTPException(403, "Inventory automation requires a manager, admin or owner.")
     if row.attempts >= 3:
         raise HTTPException(409, "Maximum three attempts reached")
     transition(row, "Pending")
@@ -653,6 +722,15 @@ def retry_workflow(ident: int, user: Actor, db: DB, background: BackgroundTasks)
 @app.post("/api/v1/workflows/{ident}/cancel")
 def cancel_workflow(ident: int, user: Actor, db: DB):
     row = owned(db, Workflow, ident, user.org_id, lock=True)
+    if (
+        row.kind == "low-stock"
+        and user.role == "analyst"
+        and not db.get(Organization, user.org_id).is_demo
+    ):
+        from .models import Membership
+
+        if db.scalar(select(Membership.id).where(Membership.actor_id == user.id)):
+            raise HTTPException(403, "Inventory automation requires a manager, admin or owner.")
     if row.kind == "purchase-approval":
         raise HTTPException(
             409, "Purchase approval workflows must be reviewed in the Approval Center"
@@ -695,7 +773,8 @@ def get_settings(user: Actor, db: DB):
 
 @app.patch("/api/v1/settings")
 def update_settings(body: SettingsBody, user: Manager, db: DB):
-    db.get(Organization, user.org_id).settings = body.model_dump()
+    org = db.get(Organization, user.org_id)
+    org.settings = {**org.settings, **body.model_dump()}
     # Rebuild unsubmitted suggestions using current rules; pending approvals stay reviewable.
     db.query(Recommendation).filter(
         Recommendation.org_id == user.org_id, Recommendation.status == "Suggested"
@@ -808,6 +887,6 @@ if web_path.exists():
     def web_app(path: str):
         if path.startswith(("api/", "samples/", "assets/", "product/")):
             raise HTTPException(404, "Not found")
-        if path not in ("", "app") and not path.startswith("app/"):
+        if path not in ("", "app", "onboarding") and not path.startswith(("app/", "auth/")):
             raise HTTPException(404, "Not found")
         return FileResponse(web_path / "index.html")

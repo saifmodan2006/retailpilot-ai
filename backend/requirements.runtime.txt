@@ -4,6 +4,8 @@ annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.15.1
 certifi==2026.10.18
+cffi==2.1.1
+cryptography==50.0.2
 charset-normalizer==3.5.2
 click==8.5.0
 colorama==0.4.6
@@ -26,6 +28,7 @@ psycopg-binary==3.3.3
 pydantic==2.14.1
 pydantic-settings==2.16.0
 pydantic_core==2.50.1
+pycparser==3.11
 PyJWT==2.15.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.4
@@ -39,3 +42,8 @@ typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.5
 uvicorn==0.41.0
+
+supabase-auth==2.33.0
+h2==4.4.1
+hpack==4.2.0
+hyperframe==6.1.0

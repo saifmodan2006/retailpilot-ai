@@ -8,6 +8,7 @@ from sqlalchemy import (
     Numeric,
     String,
     UniqueConstraint,
+    CheckConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -213,3 +214,87 @@ class AuditEvent(TenantRow, Base):
     action: Mapped[str]
     entity: Mapped[str]
     detail: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+# Persistent identities are deliberately separate from legacy/demo business actors.
+# Approval foreign keys continue to reference users.id unchanged.
+class Account(Base):
+    __tablename__ = "accounts"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    provider_id: Mapped[str] = mapped_column(String(128), unique=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True)
+    name: Mapped[str] = mapped_column(String(120), default="")
+    job_title: Mapped[str] = mapped_column(String(100), default="")
+    phone: Mapped[str] = mapped_column(String(30), default="")
+    timezone: Mapped[str] = mapped_column(String(80), default="Asia/Kolkata")
+    language: Mapped[str] = mapped_column(String(10), default="en")
+    onboarding: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    deletion_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Membership(TenantRow, Base):
+    __tablename__ = "organization_memberships"
+    account_id: Mapped[str] = mapped_column(ForeignKey("accounts.id"), index=True)
+    actor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    role: Mapped[str] = mapped_column(String(16))
+    active: Mapped[bool] = mapped_column(default=True)
+    __table_args__ = (
+        UniqueConstraint("org_id", "account_id"),
+        CheckConstraint(
+            "role IN ('owner','admin','manager','analyst','viewer')", name="ck_membership_role"
+        ),
+    )
+
+
+class AccountSession(Base):
+    __tablename__ = "account_sessions"
+    digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("accounts.id"), index=True)
+    org_id: Mapped[str | None] = mapped_column(ForeignKey("organizations.id"), nullable=True)
+    provider_tokens: Mapped[str]  # Authenticated encryption; never serialized to clients.
+    recovery: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
+class Invitation(TenantRow, Base):
+    __tablename__ = "organization_invitations"
+    email: Mapped[str] = mapped_column(String(254))
+    role: Mapped[str] = mapped_column(String(16))
+    token_digest: Mapped[str] = mapped_column(String(64), unique=True)
+    status: Mapped[str] = mapped_column(String(16), default="pending")
+    delivery: Mapped[str] = mapped_column(String(24), default="not_delivered")
+    invited_by: Mapped[str] = mapped_column(ForeignKey("accounts.id"))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        UniqueConstraint("org_id", "email"),
+        CheckConstraint(
+            "role IN ('admin','manager','analyst','viewer')", name="ck_invitation_role"
+        ),
+        CheckConstraint(
+            "status IN ('pending','accepted','rejected','expired','revoked')",
+            name="ck_invitation_status",
+        ),
+    )
+
+
+class AuthenticationEvent(Base):
+    __tablename__ = "authentication_audit_events"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    account_id: Mapped[str | None] = mapped_column(ForeignKey("accounts.id"), index=True)
+    action: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+
+
+class IdentityChallenge(Base):
+    __tablename__ = "identity_challenges"
+    digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    email: Mapped[str] = mapped_column(String(254), index=True)
+    kind: Mapped[str] = mapped_column(String(16))
+    verifier: Mapped[str]
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    __table_args__ = (CheckConstraint("kind IN ('signup','recovery')", name="ck_challenge_kind"),)

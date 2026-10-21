@@ -18,6 +18,12 @@ Hosted on Cloudflare Pages Free, Render Free and isolated Neon Free PostgreSQL. 
 
 ## Business problem
 
+Persistent accounts, private organizations and five server-enforced roles are
+implemented as a restricted Supabase Auth pilot. Public registration and real
+business uploads remain closed. The [account release report](docs/saas-upgrade.md)
+documents migrations, permissions, verification scope and remaining live email
+checks. Provider mocks establish integration behavior, not delivered production emails.
+
 Retail teams often spend hours reconciling disconnected spreadsheets before they can decide which stores need stock and which purchases deserve approval. RetailPilot turns that workflow into a traceable sequence: inspect data quality, calculate shared KPIs, explain reorder quantities, request a manager decision and export the same figures to MIS. The sample company, products and transactions are fictional. No time-saving percentage or commercial impact is claimed without a real study.
 
 ## Working product

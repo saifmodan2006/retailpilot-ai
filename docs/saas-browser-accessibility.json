@@ -1,0 +1,95 @@
+{
+  "provider": "mocked test boundary; not live Supabase",
+  "screens": [
+    {
+      "route": "profile",
+      "width": 1440,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "account",
+      "width": 1440,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "organization",
+      "width": 1440,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "workspaces",
+      "width": 1440,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "team",
+      "width": 1440,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "profile",
+      "width": 768,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "account",
+      "width": 768,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "organization",
+      "width": 768,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "workspaces",
+      "width": 768,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "team",
+      "width": 768,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "profile",
+      "width": 390,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "account",
+      "width": 390,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "organization",
+      "width": 390,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "workspaces",
+      "width": 390,
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "route": "team",
+      "width": 390,
+      "violations": 0,
+      "incomplete": 1
+    }
+  ]
+}

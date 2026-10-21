@@ -1,0 +1,18 @@
+{
+  "scope": "Managed Neon data-and-schema recovery branch queried before production migration",
+  "created_local": "2026-10-20T16:19:43+05:30",
+  "project": "curly-thunder-37563638",
+  "parent_branch": "br-silent-feather-ar0mxeuz",
+  "checkpoint_branch": "br-fancy-morning-ar08xyj9",
+  "name": "pre-accounts-2026-10-20",
+  "expires": "never",
+  "schema_revision": "b7c2_public_demo_boundary",
+  "organizations": 4,
+  "sales_rows": 195246,
+  "inventory_rows": 8640,
+  "approvals": 2,
+  "reports": 4,
+  "database_bytes": 101564416,
+  "contains": "Fictional portfolio demo data only",
+  "production_restore_performed": false
+}

@@ -1,0 +1,19 @@
+{
+  "scope": "Disposable local Compose PostgreSQL; NOT a Neon production checkpoint",
+  "postgres_version": "17.11",
+  "migration": "b7c2_public_demo_boundary -> c8d3_persistent_accounts",
+  "legacy_tables_verified": 21,
+  "legacy_fingerprints_unchanged": true,
+  "backup_restored_and_compared": true,
+  "backup_bytes": 76538,
+  "new_tables": [
+    "account_sessions",
+    "accounts",
+    "authentication_audit_events",
+    "identity_challenges",
+    "organization_invitations",
+    "organization_memberships"
+  ],
+  "alembic_drift": false,
+  "fixtures": "Fictional sales, inventory, actors, approvals, report rows and audit evidence"
+}

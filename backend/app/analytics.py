@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select, cast, Float
 
 from .models import (
+    Organization,
     Brand,
     Category,
     Inventory,
@@ -276,6 +277,8 @@ def analytics(db, org, f, config):
         "categories": categories,
         "products": products,
         "filters": f.model_dump(mode="json"),
-        "data_label": "Synthetic demonstration data",
+        "data_label": "Synthetic demonstration data"
+        if db.get(Organization, org).is_demo or config.get("_synthetic")
+        else "Organization workspace data",
         "inventory_as_of": str(inv.date.max()) if not inv.empty else None,
     }

@@ -12,7 +12,7 @@ from .core import get_db, settings, utcnow
 from .models import Organization, User
 from .demo import expiry
 
-bearer = HTTPBearer()
+bearer = HTTPBearer(auto_error=False)
 attempts = defaultdict(deque)
 limit_lock = Lock()
 
@@ -59,6 +59,12 @@ def current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
     db: Session = Depends(get_db, scope="function"),
 ):
+    if credentials is None:
+        from .account_auth import persistent_actor
+
+        if request.cookies.get("rp-account"):
+            return persistent_actor(request, db)
+        raise HTTPException(401, "Authentication required")
     try:
         claims = jwt.decode(
             credentials.credentials,
@@ -71,6 +77,11 @@ def current_user(
         user = db.get(User, int(claims["sub"]))
         if not user or user.org_id != claims["org"]:
             raise ValueError("Unknown user")
+        from .models import Membership
+        from sqlalchemy import select
+
+        if db.scalar(select(Membership.id).where(Membership.actor_id == user.id)):
+            raise ValueError("Persistent actors cannot authenticate with demo bearer tokens")
         rate_limit(request, bucket=f"user:{user.id}")
         org = db.get(Organization, user.org_id)
         if org and org.is_demo and org.settings.get("_demo_ended"):
@@ -87,6 +98,6 @@ def current_user(
 
 
 def manager(user=Depends(current_user)):
-    if user.role != "manager":
+    if user.role not in ("manager", "admin", "owner"):
         raise HTTPException(403, "A manager role is required")
     return user

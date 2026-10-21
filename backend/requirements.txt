@@ -11,6 +11,14 @@ scikit-learn==1.8.0
 python-multipart==0.0.32
 httpx==0.28.1
 PyJWT==2.15.1
+cryptography==50.0.2
+cffi==2.1.1
+pycparser==3.11
 reportlab==4.4.10
 pytest==9.0.2
 ruff==0.15.6
+
+supabase-auth==2.33.0
+h2==4.4.1
+hpack==4.2.0
+hyperframe==6.1.0

@@ -36,3 +36,17 @@ services:
         value: "false"
       - key: CORS_ORIGINS
         sync: false
+      - key: ACCOUNTS_ENABLED
+        value: "false"
+      - key: REGISTRATION_ENABLED
+        value: "false"
+      - key: REAL_UPLOADS_ENABLED
+        value: "false"
+      - key: ACCOUNT_COOKIE_SECURE
+        value: "true"
+      - key: APP_ORIGIN
+        value: "https://retailpilot-ai.pages.dev"
+      - key: ACCOUNT_MAX_USERS
+        value: "10"
+      - key: ACCOUNT_MAX_ORGANIZATIONS
+        value: "4"

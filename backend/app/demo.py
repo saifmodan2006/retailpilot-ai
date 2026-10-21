@@ -67,19 +67,22 @@ def admit_session(db):
 
 
 def quota(db, user, model, maximum):
-    if not settings.public_demo:
+    from .models import Membership
+
+    persistent = db.scalar(select(Membership.id).where(Membership.actor_id == user.id))
+    if not settings.public_demo and not persistent:
         return
-    demo_only(db, user)
     db.scalar(select(Organization).where(Organization.id == user.org_id).with_for_update())
     count = db.scalar(select(func.count()).select_from(model).where(model.org_id == user.org_id))
     if count >= maximum:
         raise HTTPException(
-            429, f"Demo limit reached ({maximum} {model.__tablename__}). Start a new session later."
+            429,
+            f"Workspace limit reached ({maximum} {model.__tablename__}). Review retention and capacity with the operator.",
         )
 
 
-def permitted_upload(content):
-    if not settings.public_demo:
+def permitted_upload(content, private=False):
+    if not settings.public_demo and (not private or settings.real_uploads_enabled):
         return
     samples = Path(__file__).resolve().parents[2] / "sample_data"
     accepted = {

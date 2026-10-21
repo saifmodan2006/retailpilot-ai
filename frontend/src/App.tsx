@@ -1,5 +1,7 @@
 import DataTable from "./components/DataTable";
 import Landing from "./pages/Landing";
+import {AccountSettings, OrganizationSettings, ProfilePage, Workspaces, signOut} from "./pages/WorkspaceAccounts";
+import Team from "./pages/Team";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Link,
@@ -62,6 +64,8 @@ import {
 } from "lucide-react";
 import {
   api,
+  accountMode,
+  configureCurrency,
   compactMoney,
   fileDownload,
   initialFilters,
@@ -106,6 +110,11 @@ const navigation = [
   },
 ] as const;
 const titles: Record<string, [string, string]> = {
+  profile: ["Your profile", "Personal details and preferences, saved to your account."],
+  account: ["Account settings", "Manage your security, sessions and account lifecycle."],
+  organization: ["Organization settings", "Business information, stores and workspace preferences."],
+  workspaces: ["Switch workspace", "Choose an organization where you have an active membership."],
+  team: ["Team members", "Verified invitations and permissions for your workspace."],
   overview: [
     "Business overview",
     "A clear view of your retail business. Every number, connected.",
@@ -382,18 +391,23 @@ export default function App() {
   const location = useLocation();
   const qc = useQueryClient();
   const [active, setActive] = useState(
-    Boolean(localStorage.getItem("rp-token")),
+    accountMode() || Boolean(localStorage.getItem("rp-token")),
   );
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [failure, setFailure] = useState("");
   const [mobile, setMobile] = useState(false);
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const privateAccount = accountMode();
   const start = async () => {
     setBusy(true);
     setFailure("");
     setNotice("");
     try {
+      if (privateAccount) {
+        await api("/auth/logout", {method: "POST"});
+        sessionStorage.removeItem("rp-account-active");
+      }
       if (me.data?.public_demo && localStorage.getItem("rp-token")) {
         await api("/demo/end", { method: "POST" }).catch(() => undefined);
       }
@@ -423,15 +437,18 @@ export default function App() {
     }
   };
   const path = location.pathname.split("/")[2] ?? "overview";
+  const accountPage = ["profile", "account", "organization", "workspaces", "team"].includes(path);
   const me = useQuery({
     queryKey: ["me"],
     queryFn: () => api("/me"),
-    enabled: active,
+    enabled: active && !(privateAccount && accountPage),
   });
+  const profile = useQuery({queryKey:["account-profile"],queryFn:()=>api("/account/profile"),enabled:privateAccount});
+  useEffect(() => {configureCurrency(me.data?.currency || "INR");}, [me.data?.currency]);
   const cat = useQuery({
     queryKey: ["catalog"],
     queryFn: () => api("/catalog"),
-    enabled: active,
+    enabled: active && !(privateAccount && accountPage),
   });
   const data = useQuery({
     queryKey: ["analytics", filters],
@@ -440,7 +457,7 @@ export default function App() {
   });
   const seedDemo = () =>
     act(
-      () => api("/demo/seed", { method: "POST" }),
+      () => api(privateAccount ? "/organizations/current/sample-data" : "/demo/seed", { method: "POST" }),
       "Synthetic data loaded. Your workspace is ready.",
     );
   if (!location.pathname.startsWith("/app"))
@@ -453,15 +470,18 @@ export default function App() {
           title="Start your retail workspace"
           text="Create an isolated demo session to explore RetailPilot."
           action={
+            <>
             <button className="btn primary" onClick={start} disabled={busy}>
               Start demo
             </button>
+            <Link className="btn" to="/auth/login">Sign in to your account</Link>
+            </>
           }
         />
         {failure && <ErrorBox error={new Error(failure)} />}
       </div>
     );
-  const ready = Boolean(cat.data?.stores?.length);
+  const ready = Boolean(cat.data?.skus?.length);
   const section = titles[path] ?? titles.overview;
   return (
     <div className="app-shell"><a href="#main-content" className="skip-link">Skip to main content</a>
@@ -471,12 +491,12 @@ export default function App() {
         </Link>
         <button
           className="workspace-selector"
-          onClick={() => navigate("/app/settings")}
+          onClick={() => navigate(privateAccount ? "/app/workspaces" : "/app/settings")}
         >
-          <span className="workspace-avatar">T</span>
+          <span className="workspace-avatar">{privateAccount ? (me.data?.organization || "W").charAt(0) : "T"}</span>
           <span>
-            <strong>Threadline Retail</strong>
-            <small>Demo workspace</small>
+            <strong>{privateAccount ? me.data?.organization || "Your workspaces" : "Threadline Retail"}</strong>
+            <small>{privateAccount ? "Private organization" : "Demo workspace"}</small>
           </span>
           <ChevronDown size={15} />
         </button>
@@ -519,7 +539,7 @@ export default function App() {
           </button>
         </div>
         <div className="sidebar-bottom">
-          <span className="live-dot" /> Fictional demo workspace <span>v1.0</span>
+          <span className="live-dot" /> {privateAccount ? "Private account workspace" : "Fictional demo workspace"} <span>v1.0</span>
         </div>
       </aside>
       {mobile && (
@@ -544,11 +564,11 @@ export default function App() {
           </div>
           <div className="top-actions">
             <span className="top-demo">
-              <span className="live-dot" /> Synthetic data demo
+              <span className="live-dot" /> {privateAccount ? me.data?.user.role || "Private account" : "Synthetic data demo"}
             </span>
             <button
               className="icon-btn"
-              aria-label="Demo help"
+              aria-label={privateAccount ? "Workspace help" : "Demo help"}
               onClick={() =>
                 setNotice(
                   "All figures are calculated from fictional data. Reporting date: 18 October 2026. Your session has its own isolated workspace.",
@@ -557,9 +577,9 @@ export default function App() {
             >
               <CircleHelp size={19} />
             </button>
-            <Link to="/app/settings" aria-label={`${me.data?.user.role === "manager" ? "DM" : "DA"} - Profile and workspace settings`} className="avatar">
+            {privateAccount ? <details className="account-menu"><summary className="avatar" aria-label="Open account menu">{(profile.data?.name || profile.data?.email || "Account").split(/\s+/).map((s:string)=>s.charAt(0)).slice(0,2).join("").toUpperCase()}</summary><nav aria-label="Account menu"><Link to="/app/profile">Profile</Link><Link to="/app/account">Account settings</Link><Link to="/app/organization">Organization settings</Link>{["owner","admin"].includes(me.data?.user.role)&&<Link to="/app/team">Team members</Link>}<Link to="/app/workspaces">Switch workspace</Link><button onClick={()=>act(signOut,"Signed out.")}>Sign out</button></nav></details> : <Link to="/app/settings" aria-label={`${me.data?.user.role === "manager" ? "DM" : "DA"} - Profile and workspace settings`} className="avatar">
               {me.data?.user.role === "manager" ? "DM" : "DA"}
-            </Link>
+            </Link>}
           </div>
         </header>
         <main id="main-content" className="main-content">
@@ -573,7 +593,7 @@ export default function App() {
               <p>{section[1]}</p>
             </div>
             <div className="heading-actions">
-              {!ready ? (
+              {!accountPage && !ready && (!privateAccount || ["owner","admin"].includes(me.data?.user.role)) ? (
                 <button
                   className="btn primary"
                   onClick={seedDemo}
@@ -586,7 +606,7 @@ export default function App() {
                   )}{" "}
                   Load demo data
                 </button>
-              ) : (
+              ) : !accountPage ? (
                 <>
                   <Link className="btn" to="/app/imports">
                     <UploadCloud size={16} /> Import data
@@ -595,7 +615,7 @@ export default function App() {
                     <ArrowDownToLine size={16} /> Create report
                   </Link>
                 </>
-              )}
+              ) : null}
             </div>
           </div>
           {notice && (
@@ -615,7 +635,7 @@ export default function App() {
           {me.isError && (
             <div className="error">
               Session unavailable.{" "}
-              <button onClick={start}>Start a new session</button>
+              {privateAccount ? <Link to="/app/workspaces">Choose an authorized workspace</Link> : <button onClick={start}>Start a new session</button>}
             </div>
           )}
           {["overview", "sales", "inventory", "forecast", "reports"].includes(
@@ -744,7 +764,8 @@ export default function App() {
               </span>
             </div>
           )}
-          {cat.isLoading ? (
+          {privateAccount && path === "overview" && <div className="account-welcome"><strong>Welcome back, {profile.data?.name || "retail colleague"}.</strong><p>{me.data?.organization || "Select your workspace"} · {me.data?.user.role || "Private account"}</p></div>}
+          {privateAccount && accountPage ? <Routes><Route path="/app/profile" element={<ProfilePage/>}/><Route path="/app/account" element={<AccountSettings/>}/><Route path="/app/organization" element={<OrganizationSettings/>}/><Route path="/app/workspaces" element={<Workspaces/>}/><Route path="/app/team" element={<Team/>}/></Routes> : cat.isLoading ? (
             <Loading />
           ) : !ready ? (
             <Panel
@@ -752,9 +773,10 @@ export default function App() {
               sub="A complete retail business, ready to explore."
             >
               <Empty
-                title="Meet your demo workspace"
-                text="12 stores. 180 products. A year of fictional retail operations. Load the data to calculate your first insights."
+                title={privateAccount ? "Your private workspace is ready" : "Meet your demo workspace"}
+                text={privateAccount ? "Start with your workspace settings and store setup. Real uploads are restricted during the pilot. Owners can load fictional data into a completely empty INR workspace." : "12 stores. 180 products. A year of fictional retail operations. Load the data to calculate your first insights."}
                 action={
+                  privateAccount ? <div className="account-toolbar"><Link className="btn" to="/app/organization">Workspace setup</Link><Link className="btn" to="/app/workspaces">Your organizations</Link>{["owner","admin"].includes(me.data?.user.role)&&!cat.data?.stores?.length&&<button className="btn primary" disabled={busy} onClick={seedDemo}>Load fictional sample data</button>}</div> :
                   <button
                     className="btn primary"
                     onClick={seedDemo}
@@ -822,7 +844,7 @@ export default function App() {
                 path="/app/approvals"
                 element={
                   <Approvals
-                    manager={me.data?.user.role === "manager"}
+                    manager={["manager","admin","owner"].includes(me.data?.user.role)}
                     act={act}
                     busy={busy}
                   />
@@ -836,7 +858,7 @@ export default function App() {
               <Route
                 path="/app/settings"
                 element={
-                  <Settings
+                  privateAccount ? <><OrganizationSettings/><SupplierSettings manager={["manager","admin","owner"].includes(me.data?.user.role)} act={act} busy={busy}/></> : <Settings
                     manager={me.data?.user.role === "manager"}
                     act={act}
                     busy={busy}
@@ -861,7 +883,7 @@ export default function App() {
           )}
           <footer className="app-footer">
             <span>
-              <ShieldCheck size={13} /> Fictional data. Real calculations.
+              <ShieldCheck size={13} /> {privateAccount ? "Organization-scoped business data." : "Fictional data. Real calculations."}
             </span>
             <span>
               RetailPilot AI <span className="footer-dot">·</span> Built for
@@ -2336,11 +2358,11 @@ function Approvals({ manager, act, busy }: { manager: boolean } & ActionProps) {
         <ShieldCheck size={19} />
         <span>
           {manager
-            ? "You are reviewing as Demo manager."
-            : "You are a Demo analyst. Switch to Demo manager to review a request."}{" "}
+            ? (accountMode() ? "You have permission to review this organization's requests." : "You are reviewing as Demo manager.")
+            : (accountMode() ? "Your role cannot approve purchasing actions. Ask a workspace manager." : "You are a Demo analyst. Switch to Demo manager to review a request.")}{" "}
           All approved actions create simulated draft orders only.
         </span>
-        {!manager && (
+        {!manager && !accountMode() && (
           <button
             className="btn small"
             disabled={busy}

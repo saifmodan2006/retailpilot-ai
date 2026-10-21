@@ -33,7 +33,7 @@ def audit(db, user, action, entity, detail=None):
             actor=f"{user.name} ({user.role})",
             action=action,
             entity=str(entity),
-            detail=detail or {},
+            detail={"actor_user_id": user.id, **(detail or {})},
         )
     )
 

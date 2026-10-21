@@ -40,6 +40,8 @@ jobs:
         working-directory: backend
       - run: npm ci && npm run lint && npm run build
         working-directory: frontend
+      - run: node scripts/check-api-proxy.mjs
+        working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
       - run: |
@@ -49,6 +51,14 @@ jobs:
           npm run dev -- --port 5173 > /tmp/frontend.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5173 && curl -fsS http://127.0.0.1:8000/api/v1/health && break || sleep 2; done
           npm run test:e2e
+      - name: Verify managed-account browser lifecycle with isolated identity mock
+        run: |
+          cd backend
+          RETAILPILOT_SAAS_TEST=1 python tests/serve_accounts.py > /tmp/accounts-backend.log 2>&1 &
+          cd ../frontend
+          RETAILPILOT_DEV_API=http://127.0.0.1:8002 npm run dev -- --port 5174 --host 127.0.0.1 > /tmp/accounts-frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5174 && curl -fsS http://127.0.0.1:8002/api/v1/health && break || sleep 2; done
+          SAAS_E2E=1 E2E_BASE_URL=http://127.0.0.1:5174 npx playwright test e2e/accounts.spec.ts
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
