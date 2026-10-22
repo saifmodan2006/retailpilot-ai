@@ -2,8 +2,8 @@
   "checked_local_date": "2026-10-22",
   "frontend": "https://retailpilot-ai.pages.dev",
   "api": "https://retailpilot-ai-api.onrender.com",
-  "frontend_source": "7305e7e",
-  "frontend_deployment": "5e99f30b-3b80-472e-81ae-9356ee949e82",
+  "frontend_source": "e27864a",
+  "frontend_deployment": "e59e23d7-faca-4212-9d92-ebbd2c40821c",
   "backend_source": "e502769",
   "backend_deployment": "dep-dbcu8t7avr4c738r6bg0",
   "smtp": {
@@ -76,7 +76,7 @@
     "anonymous_onboarding_redirect": "passed",
     "public_registration_activated": true,
     "ci_browser_scenarios_passed": 7,
-    "release_ci": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39671130190",
+    "release_ci": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39763469639",
     "live_read_only_browser_checked_at": "2026-10-22T10:13:21.274Z",
     "api_health_after_source_deployment": "passed",
     "live_demo_browser_scenarios_passed": 2,
@@ -98,7 +98,9 @@
     "public_openapi_http_status": 404,
     "frontend_http_status": 200,
     "documentation_release_ci": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39762282710",
-    "documentation_release_ci_status": "success"
+    "documentation_release_ci_status": "success",
+    "release_ci_status": "success",
+    "shared_demo_arbitrary_csv_after_private_activation": 403
   },
   "paid_resources_created": false,
   "secrets_in_this_evidence": false,
@@ -107,7 +109,7 @@
     "signup_submitted_by_user": true,
     "verification_email_received": true,
     "otp_verified_onboarding_reached": true,
-    "hosted_private_retail_journey": "pending private-import activation and renewed QA login",
+    "hosted_private_retail_journey": "Not completed; further testing stopped at user request.",
     "current_session": "Email login rejected; Google owner sign-in used to create a separate empty QA organization. Alias verification remains passed; no alias retail journey claimed."
   },
   "private_files": {
@@ -119,6 +121,7 @@
     "live_google_owner_signin": true,
     "live_empty_qa_workspace_created": true,
     "live_qa_store_saved": true,
-    "hosted_journey_blocker": "Chrome extension file URL permission is off; approval requested before enabling it"
+    "hosted_journey_blocker": "Chrome file chooser still reported local-file permission disabled after the user attempted to enable it. User subsequently requested no further testing.",
+    "further_testing": "Stopped at explicit user request; no hosted private-file workflow success claimed."
   }
 }

@@ -27,7 +27,7 @@ Public registration is active. Both admission checks accept any verified email/G
 identity, subject to 100 accounts and 100 private workspaces. Google is published to
 external users. Google sign-in and custom email delivery passed real provider checks.
 
-API source `7305e7e` deployed on Render as `dep-dbcu286q1p3s73dai17g`,
+API source `e502769` deployed on Render as `dep-dbcu8t7avr4c738r6bg0`,
 with Google and custom-SMTP capability flags enabled. The additive `c8d3` to `d9e4`
 migration remains intact. [Release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39671130190)
 passed all 90 backend and seven browser scenarios, lint, builds, proxy checks and dependency audits.
@@ -37,8 +37,8 @@ non-admitted identity rejected with 403, and the existing single identity retain
 The managed SQL role does not permit `SET ROLE supabase_auth_admin`; no permissions
 were expanded to bypass that restriction. Service-role execution was tested locally.
 
-Cloudflare Pages now serves source `7305e7e`, deployment
-`5e99f30b-3b80-472e-81ae-9356ee949e82`; the delayed GitHub delivery was resolved
+Cloudflare Pages now serves source `e27864a`, deployment
+`e59e23d7-faca-4212-9d92-ebbd2c40821c`; the delayed GitHub delivery was resolved
 by retrying the exact source deployment. The live signup, login, callback and privacy
 pages passed accessibility/overflow checks at 1440, 768 and 390 pixels, and anonymous
 onboarding redirects to login. See [live browser evidence](saas-public-browser-verification.json).
@@ -58,7 +58,8 @@ and mobile navigation. Historical checks remain separately dated in
 [Measured live provider evidence](live-provider-verification.json) distinguishes the real
 checks above from mocked tests. A QA address outside the former allowlist completed
 public signup, received its verification email and reached onboarding after OTP verification.
-Its hosted private retail journey remains pending activation and a renewed login;
+Private imports are enabled after owner approval. The complete hosted private-file journey
+remains unverified because Chrome blocked file selection; further testing stopped at owner request;
 the read-only live browser audit verified open admission,
 the Google button, SMTP/CAPTCHA capability flags and all twelve responsive page checks.
 Personal Gmail SMTP has
@@ -81,3 +82,5 @@ Do not enable public email signup using Supabase's default team-only SMTP. Free 
 Return the hook to `restricted` or `closed` and the API to restricted registration to stop new accounts while preserving existing sessions and data. Disable the Google feature flag to hide its button. Keep the stable encryption key and database URL. Do not reverse the forward-only OAuth migration or erase business tables.
 
 References: [Supabase SMTP](https://supabase.com/docs/guides/auth/auth-smtp), [Google through Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google), [Google project deletion and quotas](https://docs.cloud.google.com/resource-manager/docs/delete-restore-projects).
+
+Latest frontend release CI: [39763469639](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39763469639) passed. Shared-demo arbitrary CSV uploads still returned HTTP 403 after private imports were enabled.
