@@ -755,14 +755,14 @@ export default function App() {
                   </label>
                   <button
                     className="btn"
-                    onClick={() => setFilters(initialFilters)}
+                    onClick={() => setFilters(cat.data?.default_filters || initialFilters)}
                   >
                     Reset filters
                   </button>
                 </div>
               </details>
               <span className="filter-fresh">
-                <span className="live-dot" /> As of 18 Oct 2026
+                <span className="live-dot" /> As of {new Date(filters.end + "T00:00:00").toLocaleDateString("en-GB", {day:"numeric",month:"short",year:"numeric"})}
               </span>
             </div>
           )}
@@ -1398,7 +1398,7 @@ function Inventory({ filters, act, busy }: { filters: Filters } & ActionProps) {
         title={tab}
         sub={
           tab === "Recommendations"
-            ? "Suggestions based on 18 October 2026; your product and store filters apply. Open an item to inspect the calculation."
+            ? `Suggestions based on ${filters.end}; your product and store filters apply. Open an item to inspect the calculation.`
             : "Latest snapshot per store and SKU within your filters."
         }
         aside={<Badge>{num(rows.length)} positions</Badge>}

@@ -1,8 +1,9 @@
 # Private workspace files
 
-Prepared 22 October 2026. **Hosted activation is pending**; source availability alone
-does not prove the deployed private-file workflow. See the live provider evidence for
-public registration and the separate browser evidence for the isolated local test.
+Updated 22 October 2026. **Hosted imports are enabled after owner approval**; the live
+capability endpoint and private catalog/store UI were verified. The complete hosted
+file journey is still pending Chrome file-access permission. See live provider evidence
+for the precise status and separate browser evidence for the isolated local test.
 
 ## Use your own authorized records
 
@@ -73,7 +74,7 @@ non-critical data. Read the live `/privacy/` page before uploading.
   reported no WCAG A/AA violations or horizontal overflow.
 - Three new backend scenarios cover private/demo separation, master-data atomicity,
   role restrictions, formula/row limits, shared capacity, and correct currency/date labels.
-- A hosted private-file journey must still be executed after activation. Only fictional
+- A hosted private-file journey must still be executed after Chrome permits file selection. Only fictional
   QA records may be used for release verification; no real Saffron records are test fixtures.
 
 `REAL_UPLOADS_ENABLED` defaults false and now applies only to authenticated own-data

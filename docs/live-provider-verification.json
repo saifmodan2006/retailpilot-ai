@@ -4,8 +4,8 @@
   "api": "https://retailpilot-ai-api.onrender.com",
   "frontend_source": "7305e7e",
   "frontend_deployment": "5e99f30b-3b80-472e-81ae-9356ee949e82",
-  "backend_source": "7305e7e",
-  "backend_deployment": "dep-dbcu286q1p3s73dai17g",
+  "backend_source": "e502769",
+  "backend_deployment": "dep-dbcu8t7avr4c738r6bg0",
   "smtp": {
     "custom_smtp_saved": true,
     "verification_email_received": true,
@@ -96,7 +96,9 @@
     ],
     "anonymous_analytics_http_status": 401,
     "public_openapi_http_status": 404,
-    "frontend_http_status": 200
+    "frontend_http_status": 200,
+    "documentation_release_ci": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39762282710",
+    "documentation_release_ci_status": "success"
   },
   "paid_resources_created": false,
   "secrets_in_this_evidence": false,
@@ -106,13 +108,17 @@
     "verification_email_received": true,
     "otp_verified_onboarding_reached": true,
     "hosted_private_retail_journey": "pending private-import activation and renewed QA login",
-    "current_session": "expired; user login requested"
+    "current_session": "Email login rejected; Google owner sign-in used to create a separate empty QA organization. Alias verification remains passed; no alias retail journey claimed."
   },
   "private_files": {
     "source_implemented": true,
     "deployed": true,
-    "enabled": false,
+    "enabled": true,
     "hosted_journey_passed": false,
-    "activation": "prepared, unsaved; action-time confirmation requested"
+    "activation": "Owner approved; saved and deployed; live auth config real_uploads=true verified",
+    "live_google_owner_signin": true,
+    "live_empty_qa_workspace_created": true,
+    "live_qa_store_saved": true,
+    "hosted_journey_blocker": "Chrome extension file URL permission is off; approval requested before enabling it"
   }
 }

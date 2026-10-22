@@ -27,8 +27,8 @@ real verification and recovery emails, and the verified owner has a fictional pr
 
 Public registration and Google sign-in are implemented behind deployment flags.
 Google sign-in has passed a real owner consent/callback test through the dedicated
-free Google project. Public admission is active; private own-data imports are prepared
-behind a separate flag. The shared demo remains fictional and accepts supplied samples only.
+free Google project. Public admission and private own-data imports are enabled.
+The shared demo remains fictional and accepts supplied samples only.
 See the [public authentication release notes](docs/public-auth.md)
 for tested behavior, configuration and activation checks.
 
