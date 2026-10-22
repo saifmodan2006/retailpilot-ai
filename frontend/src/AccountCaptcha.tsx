@@ -23,17 +23,27 @@ function loadTurnstile() {
 function Widget({siteKey}:{siteKey:string}) {
  const target=useRef<HTMLDivElement>(null),[token,setToken]=useState(""),[error,setError]=useState("");
  useEffect(()=>{
-  let stopped=false,id:string|undefined;
+  let stopped=false,id:string|undefined,observer:ResizeObserver|undefined;
+  let renderedSize:string|undefined;
   const form=target.current?.closest("form");
   const reset=()=>{setTimeout(()=>{if(!stopped&&id&&window.turnstile){setToken("");window.turnstile.reset(id);}},0);};
   void loadTurnstile().then(()=>{
    if(stopped||!target.current||!window.turnstile)return;
-   id=window.turnstile.render(target.current,{sitekey:siteKey,theme:"light",size:"flexible","response-field":false,
+   const renderWidget=()=>{
+    if(stopped||!target.current||!window.turnstile)return;
+    const size=target.current.clientWidth<300?"compact":"flexible";
+    if(size===renderedSize)return;
+    if(id)window.turnstile.remove(id);
+    setToken("");renderedSize=size;
+    id=window.turnstile.render(target.current,{sitekey:siteKey,theme:"light",size,"response-field":false,
     callback:(value:string)=>{setToken(value);setError("");},"expired-callback":()=>setToken(""),
     "error-callback":()=>{setToken("");setError("Bot protection is temporarily unavailable. Reload and try again.");}});
+   };
+   renderWidget();
+   observer=new ResizeObserver(renderWidget);observer.observe(target.current);
   }).catch(e=>{if(!stopped)setError((e as Error).message);});
   form?.addEventListener("submit",reset);
-  return()=>{stopped=true;form?.removeEventListener("submit",reset);if(id)window.turnstile?.remove(id);};
+  return()=>{stopped=true;observer?.disconnect();form?.removeEventListener("submit",reset);if(id)window.turnstile?.remove(id);};
  },[siteKey]);
  return <div className="account-captcha"><div ref={target}/><input type="hidden" name="captcha_token" value={token}/>{error&&<p role="alert">{error}</p>}</div>;
 }
