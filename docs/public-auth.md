@@ -12,7 +12,7 @@ This report distinguishes implemented behavior from live provider configuration.
 - An operator-owned Supabase hook supports closed, restricted and open registration. Google-only opening is possible while SMTP is unavailable. The hook and API each retain bounded account capacity; open access does not promise unlimited free hosting.
 - Privacy information is available at `/privacy/`. Provider secrets never belong in frontend build variables.
 
-Executed locally: **86 backend tests**, **six Playwright scenarios**, frontend lint, TypeScript and production build. The Google browser scenario mocks the external identity exchange; it does not establish live Google consent or SMTP delivery. Playwright also completed the original upload, validation, import, recommendation, approval, MIS export and analyst journey.
+Latest release CI: **90 backend tests**, **seven Playwright scenarios**, frontend lint, TypeScript and production build. The isolated Google browser scenario mocks the external identity exchange; real provider checks are recorded separately below. Playwright also covers the original upload, validation, import, recommendation, approval, MIS export and analyst journey.
 
 PostgreSQL migration and backup/restore checks passed:
 
@@ -27,23 +27,26 @@ Public registration is active. Both admission checks accept any verified email/G
 identity, subject to 100 accounts and 100 private workspaces. Google is published to
 external users. Google sign-in and custom email delivery passed real provider checks.
 
-API source `d3e587a` deployed on Render as `dep-dbchi30m7kps73a05mkg`,
+API source `7305e7e` deployed on Render as `dep-dbcu286q1p3s73dai17g`,
 with Google and custom-SMTP capability flags enabled. The additive `c8d3` to `d9e4`
-migration remains intact. [Release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39625863165)
-passed all 86 backend and six browser scenarios, lint, builds, proxy checks and dependency audits.
+migration remains intact. [Release CI](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39671130190)
+passed all 90 backend and seven browser scenarios, lint, builds, proxy checks and dependency audits.
 The new registration hook was installed in restricted mode and its live grants
 were checked: Auth service SELECT/EXECUTE allowed, anonymous access denied,
 non-admitted identity rejected with 403, and the existing single identity retained.
 The managed SQL role does not permit `SET ROLE supabase_auth_admin`; no permissions
 were expanded to bypass that restriction. Service-role execution was tested locally.
 
-Cloudflare Pages now serves source `d3e587a`, deployment
-`62fe0aea-b227-42d6-8c71-a7b8a4ad7cef`; the delayed GitHub delivery was resolved
+Cloudflare Pages now serves source `7305e7e`, deployment
+`5e99f30b-3b80-472e-81ae-9356ee949e82`; the delayed GitHub delivery was resolved
 by retrying the exact source deployment. The live signup, login, callback and privacy
 pages passed accessibility/overflow checks at 1440, 768 and 390 pixels, and anonymous
 onboarding redirects to login. See [live browser evidence](saas-public-browser-verification.json).
-Earlier demo Excel-to-MIS/analyst journeys remain recorded separately in
-[the historical deployment evidence](public-oauth-release-verification.json).
+The current `7305e7e` deployment passed both live demo Playwright scenarios in
+3.3 minutes: Excel validation/import, exact revenue increment, recommendations,
+manager approval, XLSX MIS export, deterministic analyst, forecasting, audit log
+and mobile navigation. Historical checks remain separately dated in
+[the earlier deployment evidence](public-oauth-release-verification.json).
 
 - The dedicated free Turnstile widget is enabled in both the API and Supabase Auth. Automated Chrome initially received error `300030`; the owner completed the normal browser check, producing a real token. The protected recovery request was accepted and its email arrived. No challenge bypass, test key or pre-clearance was used.
 - Gmail custom SMTP is saved in Supabase only. The exposed older app password was revoked, and the owner created its replacement. Actual verification delivery, signup OTP verification and recovery delivery passed. The replacement credential is absent from source and evidence. Final password reset was not performed because it requires the owner to choose a password.
@@ -53,8 +56,10 @@ Earlier demo Excel-to-MIS/analyst journeys remain recorded separately in
 - Owner onboarding, fictional seeding and page refresh passed. Production SQL measured **88,973,312 database bytes**, one account, one membership, two organizations including the legacy demo, 97,608 fictional sales and 4,320 inventory snapshots. Dashboard project storage was 99.42 MB; that metric can lag and includes a different scope. This fits even a conservative 500 MB storage budget. Global sample seeding remains bounded to 400,000 sales rows.
 
 [Measured live provider evidence](live-provider-verification.json) distinguishes the real
-checks above from mocked tests. A new non-owner public signup and its private retail
-journey remain untested; the read-only live browser audit verified open admission,
+checks above from mocked tests. A QA address outside the former allowlist completed
+public signup, received its verification email and reached onboarding after OTP verification.
+Its hosted private retail journey remains pending activation and a renewed login;
+the read-only live browser audit verified open admission,
 the Google button, SMTP/CAPTCHA capability flags and all twelve responsive page checks.
 Personal Gmail SMTP has
 limited sending capacity and no delivery SLA; it is appropriate only for a small portfolio demo.

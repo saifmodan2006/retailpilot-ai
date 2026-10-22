@@ -1,82 +1,118 @@
 {
-    "checked_local_date":  "2026-10-22",
-    "frontend":  "https://retailpilot-ai.pages.dev",
-    "api":  "https://retailpilot-ai-api.onrender.com",
-    "frontend_source":  "d3e587a",
-    "frontend_deployment":  "62fe0aea-b227-42d6-8c71-a7b8a4ad7cef",
-    "backend_source":  "d3e587a",
-    "backend_deployment":  "dep-dbchm9om7kps73a0k2rg",
-    "smtp":  {
-                 "custom_smtp_saved":  true,
-                 "verification_email_received":  true,
-                 "owner_signup_otp_verified":  true,
-                 "recovery_email_received_after_turnstile":  true,
-                 "password_reset_completed":  false,
-                 "limitation":  "Personal Gmail SMTP; quota-limited portfolio delivery, no SLA. No manual invitation delivery implemented."
-             },
-    "captcha":  {
-                    "provider":  "Cloudflare Turnstile",
-                    "dedicated_hostname":  "retailpilot-ai.pages.dev",
-                    "api_enabled":  true,
-                    "supabase_enabled_persisted":  true,
-                    "manual_browser_token_observed":  true,
-                    "protected_recovery_request_accepted":  true,
-                    "automated_browser_failure":  "300030; resolved by user completing the normal browser check. No bypass or test key used."
-                },
-    "google":  {
-                   "free_project_quota_granted":  true,
-                   "project_id":  "retailpilot-ai-512319",
-                   "dedicated_web_client_created_by_owner":  true,
-                   "supabase_provider_enabled":  true,
-                   "scopes":  [
-                                  "openid",
-                                  "email",
-                                  "profile"
-                              ],
-                   "sensitive_or_restricted_scopes":  [
-
-                                                      ],
-                   "real_owner_consent_completed":  true,
-                   "same_browser_callback_completed":  true,
-                   "existing_private_workspace_opened":  true,
-                   "identity_count_after_email_and_google":  1,
-                   "public_publishing":  "In production",
-                   "flask_project_shutdown":  "User-approved shutdown completed; scheduled deletion Nov 20, 2026"
-               },
-    "owner_workspace":  {
-                            "onboarding_completed":  true,
-                            "optional_store_fields_blank_accepted":  true,
-                            "fictional_samples_loaded":  true,
-                            "browser_refresh_preserved_workspace":  true,
-                            "sales_rows":  97608,
-                            "inventory_rows":  4320
-                        },
-    "neon":  {
-                 "schema_revision":  "d9e4_google_oauth",
-                 "database_bytes":  88973312,
-                 "persistent_accounts":  1,
-                 "memberships":  1,
-                 "organizations_including_legacy_demo":  2,
-                 "dashboard_project_storage_mb":  99.42,
-                 "plan":  "Free",
-                 "fits_even_conservative_500_mb_budget":  true,
-                 "note":  "SQL database size and dashboard project storage measure different scopes; dashboard usage may lag. Recovery branches remain preserved."
-             },
-    "checks":  {
-                   "backend_tests_passed":  86,
-                   "frontend_lint":  "passed",
-                   "typescript":  "passed",
-                   "production_build":  "passed",
-                   "live_read_only_browser_pages":  12,
-                   "wcag_a_aa_violations":  0,
-                   "widths":  [
-                                  1440,
-                                  768,
-                                  390
-                              ],
-                   "anonymous_onboarding_redirect":  "passed",
-                   "public_registration_activated":  true
-               },
-    "paid_resources_created":  false,
-    "secrets_in_this_evidence":  false
+  "checked_local_date": "2026-10-22",
+  "frontend": "https://retailpilot-ai.pages.dev",
+  "api": "https://retailpilot-ai-api.onrender.com",
+  "frontend_source": "7305e7e",
+  "frontend_deployment": "5e99f30b-3b80-472e-81ae-9356ee949e82",
+  "backend_source": "7305e7e",
+  "backend_deployment": "dep-dbcu286q1p3s73dai17g",
+  "smtp": {
+    "custom_smtp_saved": true,
+    "verification_email_received": true,
+    "owner_signup_otp_verified": true,
+    "recovery_email_received_after_turnstile": true,
+    "password_reset_completed": false,
+    "limitation": "Personal Gmail SMTP; quota-limited portfolio delivery, no SLA. No manual invitation delivery implemented."
+  },
+  "captcha": {
+    "provider": "Cloudflare Turnstile",
+    "dedicated_hostname": "retailpilot-ai.pages.dev",
+    "api_enabled": true,
+    "supabase_enabled_persisted": true,
+    "manual_browser_token_observed": true,
+    "protected_recovery_request_accepted": true,
+    "automated_browser_failure": "300030; resolved by user completing the normal browser check. No bypass or test key used."
+  },
+  "google": {
+    "free_project_quota_granted": true,
+    "project_id": "retailpilot-ai-512319",
+    "dedicated_web_client_created_by_owner": true,
+    "supabase_provider_enabled": true,
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ],
+    "sensitive_or_restricted_scopes": [],
+    "real_owner_consent_completed": true,
+    "same_browser_callback_completed": true,
+    "existing_private_workspace_opened": true,
+    "identity_count_after_email_and_google": 1,
+    "public_publishing": "In production",
+    "flask_project_shutdown": "User-approved shutdown completed; scheduled deletion Nov 20, 2026"
+  },
+  "owner_workspace": {
+    "onboarding_completed": true,
+    "optional_store_fields_blank_accepted": true,
+    "fictional_samples_loaded": true,
+    "browser_refresh_preserved_workspace": true,
+    "sales_rows": 97608,
+    "inventory_rows": 4320
+  },
+  "neon": {
+    "schema_revision": "d9e4_google_oauth",
+    "database_bytes": 88973312,
+    "persistent_accounts": 1,
+    "memberships": 1,
+    "organizations_including_legacy_demo": 2,
+    "dashboard_project_storage_mb": 99.42,
+    "plan": "Free",
+    "fits_even_conservative_500_mb_budget": true,
+    "note": "SQL database size and dashboard project storage measure different scopes; dashboard usage may lag. Recovery branches remain preserved.",
+    "measurement_note": "Historical owner-onboarding measurement before the additional QA identity; not a current account count."
+  },
+  "checks": {
+    "backend_tests_passed": 90,
+    "frontend_lint": "passed",
+    "typescript": "passed",
+    "production_build": "passed",
+    "live_read_only_browser_pages": 12,
+    "wcag_a_aa_violations": 0,
+    "widths": [
+      1440,
+      768,
+      390
+    ],
+    "anonymous_onboarding_redirect": "passed",
+    "public_registration_activated": true,
+    "ci_browser_scenarios_passed": 7,
+    "release_ci": "https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39671130190",
+    "live_read_only_browser_checked_at": "2026-10-22T10:13:21.274Z",
+    "api_health_after_source_deployment": "passed",
+    "live_demo_browser_scenarios_passed": 2,
+    "live_demo_browser_elapsed": "3.3 minutes",
+    "live_demo_source": "7305e7e",
+    "live_demo_workflow": [
+      "upload",
+      "validation",
+      "import",
+      "reorder",
+      "manager approval",
+      "XLSX MIS export",
+      "deterministic analyst",
+      "forecasting",
+      "audit log",
+      "mobile navigation"
+    ],
+    "anonymous_analytics_http_status": 401,
+    "public_openapi_http_status": 404,
+    "frontend_http_status": 200
+  },
+  "paid_resources_created": false,
+  "secrets_in_this_evidence": false,
+  "public_qa": {
+    "outside_former_allowlist": true,
+    "signup_submitted_by_user": true,
+    "verification_email_received": true,
+    "otp_verified_onboarding_reached": true,
+    "hosted_private_retail_journey": "pending private-import activation and renewed QA login",
+    "current_session": "expired; user login requested"
+  },
+  "private_files": {
+    "source_implemented": true,
+    "deployed": true,
+    "enabled": false,
+    "hosted_journey_passed": false,
+    "activation": "prepared, unsaved; action-time confirmation requested"
+  }
 }

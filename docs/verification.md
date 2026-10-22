@@ -2,6 +2,12 @@
 
 These are executed checks against the actual application, not a production certification.
 
+For the 22 October account/OAuth/private-file source release, see
+[public authentication](public-auth.md) and [live provider evidence](live-provider-verification.json).
+Release CI [39671130190](https://github.com/saifmodan2006/retailpilot-ai/actions/runs/39671130190)
+passed 90 backend tests and seven browser scenarios. The measurements below remain the
+dated 20 October retail release evidence; private-file hosted activation is tracked separately.
+
 ## Verified public endpoints
 
 - Frontend: https://retailpilot-ai.pages.dev/
