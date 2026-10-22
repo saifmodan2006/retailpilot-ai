@@ -1,0 +1,155 @@
+/* Final layout layer: keep content usable without clipping the document. */
+#root, .app-shell, .main-shell, .main-content { min-width: 0; }
+.page-heading > *, .panel-head > *, .two-col > *, .overview-grid > *,
+.bottom-grid > *, .account-grid > *, .marketing-hero > * { min-width: 0; }
+.workspace-selector > span { min-width: 0; }
+.workspace-selector strong { display: block; overflow-wrap: anywhere; }
+.workspace-selector > svg, .nav-item > svg { flex-shrink: 0; }
+.account-main, .account-card, .account-section, .account-field { min-width: 0; }
+.account-section { width: 100%; }
+.account-section p, .account-notice, .account-welcome, .toast > span,
+.error, .footnote, .info-banner > span { overflow-wrap: anywhere; }
+.account-scroll, .table-scroll { max-width: 100%; overscroll-behavior-x: contain; }
+.account-field input[type="file"] { max-width: 100%; }
+.account-choice span { min-width: 0; }
+.table-tools { flex-wrap: wrap; }
+.search { min-width: 0; max-width: 100%; }
+.search input { min-width: 0; max-width: 100%; }
+.chart, .recharts-responsive-container { min-width: 0; }
+.sidebar-close { display: none; }
+.marketing-nav { height: auto; min-height: 86px; padding-block: 18px; }
+.marketing-nav > .btn { flex-shrink: 0; }
+.hero-actions, .marketing-final, .marketing-footer { min-width: 0; }
+.marketing-final > *, .hero-copy, .hero-proof > span { min-width: 0; }
+.release-landing img { max-width: 100%; height: auto; }
+
+@media (max-width: 1200px) and (min-width: 1025px) {
+  .marketing-nav { flex-wrap: wrap; gap: 16px; }
+  .marketing-nav > nav { order: 1; width: 100%; justify-content: center; }
+  .marketing-nav > a:first-child { margin-right: auto; }
+}
+
+/* Tablets use the same roomy, dismissible navigation as phones. */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: min(288px, calc(100vw - 48px));
+    height: 100dvh;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    transform: translateX(-100%);
+    visibility: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .sidebar.open { transform: translateX(0); visibility: visible; }
+  .sidebar .brand-link { padding-right: 36px; }
+  .sidebar-close {
+    display: grid; place-items: center; position: absolute; top: 20px; right: 12px;
+    width: 44px; height: 44px; color: #fff;
+  }
+  .sidebar .nav-item { min-height: 44px; font-size: 13px; }
+  .main-shell { margin-left: 0; }
+  .mobile-menu { display: flex; flex-shrink: 0; margin-right: 8px; }
+  .scrim { display: block; position: fixed; inset: 0; z-index: 25; border: 0; background: #10182899; }
+  .topbar { padding-inline: 20px; gap: 8px; }
+  .breadcrumb { min-width: 0; flex: 1; gap: 8px; }
+  .breadcrumb strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .top-actions { flex-shrink: 0; gap: 8px; }
+  .main-content { padding: 24px 24px 0; }
+  .overview-grid { grid-template-columns: minmax(0, 1fr); }
+  .two-col, .bottom-grid, .import-layout { grid-template-columns: minmax(0, 1fr); }
+  .marketing-nav { flex-wrap: wrap; gap: 12px; padding: 18px 24px; }
+  .marketing-nav nav { display: none; }
+  .marketing-nav > a:first-child { margin-right: auto; }
+  .marketing-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .hero-manifest { display: none; }
+  .account-layout { grid-template-columns: minmax(0, 1fr); }
+  .account-story { padding: 24px; gap: 20px; }
+  .account-story > div, .account-story > small { display: none; }
+  .account-main { padding: 28px 24px; }
+}
+
+@media (max-width: 640px) {
+  .main-content { padding: 20px 16px 0; }
+  .topbar { padding: 8px 12px; height: auto; min-height: 64px; }
+  .topbar .icon-btn, .topbar .avatar { min-width: 44px; min-height: 44px; }
+  .breadcrumb { font-size: 12px; gap: 5px; }
+  .breadcrumb > svg { flex-shrink: 0; }
+  .top-demo { display: none; }
+  .page-heading { flex-direction: column; align-items: stretch; gap: 16px; }
+  .page-heading h1 { font-size: clamp(24px, 6.5vw, 30px); line-height: 1.25; }
+  .page-heading p { font-size: 14px; max-width: none; }
+  .heading-actions { padding-top: 0; justify-content: flex-start; flex-wrap: wrap; }
+  .heading-actions .btn { flex: 1 1 130px; justify-content: center; min-height: 44px; font-size: 13px; }
+  .btn, .tabs button, .pagination .icon-btn { min-height: 44px; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+  .filterbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px; }
+  .filterbar > *, .filterbar > label { min-width: 0; }
+  .filter-label, .filter-fresh { grid-column: 1 / -1; }
+  .filter-label span { display: inline; }
+  .filterbar > label { display: grid; gap: 6px; }
+  .filterbar > label .sr-only {
+    position: static; width: auto; height: auto; padding: 0; margin: 0;
+    clip: auto; clip-path: none; white-space: normal; overflow: visible; font-size: 12px;
+  }
+  .filterbar input, .filterbar input[type="date"], .filterbar select {
+    width: 100%; min-width: 0; max-width: none; min-height: 44px; font-size: 16px;
+  }
+  .extra-filters { position: static; margin: 0; }
+  .extra-filters summary { min-height: 44px; display: flex; align-items: center; gap: 8px; }
+  .extra-filters > div { width: auto; left: 12px; right: 12px; top: 100%; max-height: 65dvh; overflow: auto; z-index: 20; }
+  .kpi-grid, .kpi-grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .kpi { padding: 16px 12px; min-height: 130px; }
+  .kpi > strong { font-size: clamp(23px, 6vw, 29px); }
+  .kpi-note { flex-wrap: wrap; font-size: 11px; }
+  .panel-head { flex-wrap: wrap; padding: 18px 16px 14px; }
+  .panel-head p { font-size: 13px; }
+  .table-tools { margin-inline: 16px; }
+  .search { flex: 1 1 180px; }
+  .search input { width: 100%; min-height: 44px; }
+  .table-scroll table { min-width: 540px; }
+  .pagination { flex-wrap: wrap; gap: 12px; }
+  .pagination .icon-btn { min-width: 44px; }
+  .tabs { max-width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .tabs button { flex-shrink: 0; font-size: 13px; }
+  .mapping-grid, .report-catalog, .question-grid, .account-grid { grid-template-columns: minmax(0, 1fr); }
+  .mapping-grid select { min-width: 0; max-width: 100%; font-size: 16px; }
+  .analyst-input { flex-wrap: wrap; gap: 8px; }
+  .analyst-input input { flex: 1 1 180px; min-height: 44px; font-size: 16px; }
+  .analyst-input .btn { flex: 1 1 100%; justify-content: center; }
+  .workflow-card { grid-template-columns: 34px minmax(0, 1fr); }
+  .workflow-card .btn { grid-column: 1 / -1; grid-row: auto; margin-top: 10px; font-size: 13px; }
+  .workflow-card p { font-size: 13px; }
+  .modal-backdrop { padding: 0; }
+  .modal { width: 100%; max-width: 100%; padding: 20px 16px max(20px, env(safe-area-inset-bottom)); }
+  .modal-title > div { min-width: 0; }
+  .modal-actions { flex-wrap: wrap; }
+  .modal-actions .btn { flex: 1 1 140px; justify-content: center; }
+  .account-section { padding: 18px 16px; }
+  .account-section dl { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .account-section dd { margin-bottom: 12px; }
+  .account-toolbar > .btn { flex: 1 1 150px; justify-content: center; white-space: normal; text-align: center; }
+  .account-main { padding: 24px 16px; }
+  .account-menu nav { max-width: calc(100vw - 32px); }
+  .marketing-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px 20px; gap: 12px; }
+  .marketing-nav > a:first-child { grid-column: 1 / -1; width: auto; margin: 0 0 4px; }
+  .marketing-nav > .btn { min-height: 44px; padding: 10px 8px; font-size: 13px; justify-content: center; white-space: normal; text-align: center; }
+  .marketing-nav > button { grid-column: 1 / -1; }
+  .marketing-hero h1 { font-size: clamp(32px, 9vw, 48px); letter-spacing: -.04em; }
+  .hero-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .hero-actions .btn { width: 100%; justify-content: center; font-size: 14px; }
+  .hero-proof { gap: 12px 16px; }
+  .analyst-feature > div { min-width: 0; }
+  .marketing-final .btn { width: 100%; justify-content: center; white-space: normal; text-align: center; }
+  .marketing-footer > div { display: flex; flex-wrap: wrap; gap: 16px; }
+  .app-footer { flex-wrap: wrap; font-size: 11px; }
+  .app-footer > span:last-child { text-align: left; }
+}
+
+@media (max-width: 360px) {
+  .topbar .breadcrumb { font-size: 11px; }
+  .top-actions { gap: 2px; }
+  .mobile-menu { margin-right: 0; }
+  .kpi-grid, .kpi-grid.three { grid-template-columns: minmax(0, 1fr); }
+  .inventory-summary { flex-direction: column; }
+  .inventory-summary > div { min-width: 0; width: 100%; }
+}

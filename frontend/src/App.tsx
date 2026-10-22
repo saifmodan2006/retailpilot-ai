@@ -397,6 +397,32 @@ export default function App() {
   const [notice, setNotice] = useState("");
   const [failure, setFailure] = useState("");
   const [mobile, setMobile] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mobile) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sidebarRef.current?.querySelector<HTMLButtonElement>(".sidebar-close")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobile(false);
+      if (event.key !== "Tab") return;
+      const controls = sidebarRef.current?.querySelectorAll<HTMLElement>("a[href], button:not(:disabled)");
+      if (!controls?.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    const onResize = () => { if (window.innerWidth > 1024) setMobile(false); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onResize);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onResize);
+      previousFocus?.focus();
+    };
+  }, [mobile]);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const privateAccount = accountMode();
   const start = async () => {
@@ -487,13 +513,14 @@ export default function App() {
   const section = titles[path] ?? titles.overview;
   return (
     <div className="app-shell"><a href="#main-content" className="skip-link">Skip to main content</a>
-      <aside className={`sidebar ${mobile ? "open" : ""}`}>
-        <Link to="/" className="brand-link">
+      <aside id="workspace-navigation" ref={sidebarRef} className={`sidebar ${mobile ? "open" : ""}`} aria-label="Workspace navigation">
+        <button className="icon-btn sidebar-close" aria-label="Close navigation" onClick={() => setMobile(false)}><X size={20}/></button>
+        <Link to="/" className="brand-link" onClick={() => setMobile(false)}>
           <Brand />
         </Link>
         <button
           className="workspace-selector"
-          onClick={() => navigate(privateAccount ? "/app/workspaces" : "/app/settings")}
+          onClick={() => {setMobile(false);navigate(privateAccount ? "/app/workspaces" : "/app/settings");}}
         >
           <span className="workspace-avatar">{privateAccount ? (me.data?.organization || "W").charAt(0) : "T"}</span>
           <span>
@@ -531,6 +558,7 @@ export default function App() {
           <p>Take the complete data-to-decision journey.</p>
           <button
             onClick={() => {
+              setMobile(false);
               setNotice(
                 "Demo: load data → import sample → review inventory → submit approval → switch to demo manager → approve → generate MIS → ask the analyst.",
               );
@@ -547,15 +575,17 @@ export default function App() {
       {mobile && (
         <button
           className="scrim"
-          aria-label="Close navigation"
+          aria-label="Close navigation overlay"
           onClick={() => setMobile(false)}
         />
       )}
-      <div className="main-shell">
+      <div className="main-shell" inert={mobile}>
         <header className="topbar">
           <button
             className="icon-btn mobile-menu"
             aria-label="Open navigation"
+            aria-expanded={mobile}
+            aria-controls="workspace-navigation"
             onClick={() => setMobile(true)}
           >
             <Menu size={20} />

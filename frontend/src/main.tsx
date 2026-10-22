@@ -11,6 +11,7 @@ import Privacy from "./pages/Privacy";
 import "@fontsource-variable/inter";
 import "./style.css";
 import "./premium.css";
+import "./responsive.css";
 const client = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, staleTime: 30000, refetchOnWindowFocus: false },
